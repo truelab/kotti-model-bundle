@@ -17,7 +17,10 @@ class TypeInfoAnnotationReaderTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->typeInfoAnnotationReader = new TypeInfoAnnotationReader();
+        $this->typeInfoAnnotationReader = new TypeInfoAnnotationReader(
+            'Truelab\KottiModelBundle\TypeInfo\TypeInfo',
+            'Truelab\KottiModelBundle\Model\Node'
+        );
     }
 
     public function testInheritanceLineageTypeInfosWithNoClass()

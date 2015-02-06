@@ -3,6 +3,7 @@
 namespace Truelab\KottiModelBundle\Repository;
 
 use Doctrine\DBAL\Connection;
+use Truelab\KottiModelBundle\Exception\NodeByPathNotFoundException;
 use Truelab\KottiModelBundle\Model\ModelFactory;
 use Truelab\KottiModelBundle\Model\Node;
 use Truelab\KottiModelBundle\Model\NodeInterface;
@@ -25,12 +26,16 @@ class Repository implements RepositoryInterface
 
     /**
      * @param Connection $connection
+     * @param TypeInfoAnnotationReader $typeInfoAnnotationReader
+     * @param ModelFactory $modelFactory
      */
-    public function __construct(Connection $connection)
+    public function __construct(Connection $connection,
+                                TypeInfoAnnotationReader $typeInfoAnnotationReader,
+                                ModelFactory $modelFactory)
     {
         $this->_connection = $connection;
-        $this->_typeAnnotationReader = new TypeInfoAnnotationReader();
-        $this->_modelFactory = new ModelFactory();
+        $this->_typeAnnotationReader = $typeInfoAnnotationReader;
+        $this->_modelFactory = $modelFactory;
     }
 
     /**
@@ -46,7 +51,6 @@ class Repository implements RepositoryInterface
     {
         $nodeTypeInfo = $this->_typeAnnotationReader->typeInfo(Node::getClass());
 
-        // TODO cache this infos!!! injected map?
         // can return all type infos if $class == null
         $typeInfos = $this->_typeAnnotationReader->inheritanceLineageTypeInfos($class);
 
@@ -63,7 +67,6 @@ class Repository implements RepositoryInterface
                 $qb->addSelect($field->getDottedName() . ' AS ' . $field->getAlias());
             }
         }
-
 
         // remove node before join sql parts
         if($class) {
@@ -109,9 +112,15 @@ class Repository implements RepositoryInterface
             }
         }
 
-        return $this->_modelFactory->createModelCollection(
+        $collection = $this->_modelFactory->createModelCollectionFromRawData(
             $this->_connection->executeQuery($sql, $params)->fetchAll()
         );
+
+        foreach($collection as $node) {
+            $node->setRepository($this);
+        }
+
+        return $collection;
     }
 
     protected function prepareCriteria($criteria, &$params)
@@ -165,8 +174,18 @@ class Repository implements RepositoryInterface
 
     public function findByPath($path)
     {
-        return $this->findOne(null, [
-            [ 'WHERE nodes.path = ?' => $path ]
-        ]);
+        try{
+            $node = $this->findOne(null, [
+                [ 'WHERE nodes.path = ?' => $path ]
+            ]);
+        }catch(\Exception $e) {
+            throw new NodeByPathNotFoundException($path, $e);
+        }
+
+        if(!$node) {
+            throw new NodeByPathNotFoundException($path);
+        }
+
+        return $node;
     }
 }

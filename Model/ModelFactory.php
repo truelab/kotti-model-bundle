@@ -1,8 +1,7 @@
 <?php
 
 namespace Truelab\KottiModelBundle\Model;
-use Doctrine\Common\Annotations\AnnotationReader;
-use Truelab\KottiModelBundle\TypeInfo\TypeInfo;
+
 use Truelab\KottiModelBundle\TypeInfo\TypeInfoAnnotationReader;
 
 /**
@@ -12,6 +11,8 @@ use Truelab\KottiModelBundle\TypeInfo\TypeInfoAnnotationReader;
 class ModelFactory
 {
     private $_typeInfoAnnotationReader;
+
+    private $_discriminatorColumn;
 
     public static $map = [ // FIXME inject from configuration
         'content'  => 'Truelab\KottiModelBundle\Model\Content',
@@ -29,25 +30,32 @@ class ModelFactory
         'right_box_manager' => 'Truelab\KottiModelBundle\Model\RightBoxManager'
     ];
 
-    public function __construct()
+    public function __construct(TypeInfoAnnotationReader $typeInfoAnnotationReader,
+                                $discriminatorColumn = 'nodes_type')
     {
-        $this->_typeInfoAnnotationReader = new TypeInfoAnnotationReader();
+        $this->_typeInfoAnnotationReader = $typeInfoAnnotationReader;
+        $this->_discriminatorColumn = $discriminatorColumn;
     }
 
-    public function createModel(array $record)
+    /**
+     * @param array $record
+     *
+     * @return NodeInterface|null
+     */
+    public function createModelFromRawData(array $record)
     {
-        $type      = $record['nodes_type']; // FIXME
+        $type = $record[$this->_discriminatorColumn];
 
         if(!isset(self::$map[$type])) {
-            //throw new \Exception(sprintf('Unknown type "%s"!', $type));
+            // FIXME we must throw new \Exception(sprintf('Unknown type "%s"!', $type));
             return null;
         }
 
-        $class     = self::$map[$type];
+        $class = self::$map[$type];
 
         $typeInfos = $this->_typeInfoAnnotationReader->inheritanceLineageTypeInfos($class);
 
-        $object = new $class(); // FIXME
+        $object = new $class();
 
         foreach($record as $alias => $value)
         {
@@ -57,15 +65,19 @@ class ModelFactory
                 }
             }
         }
-
         return $object;
     }
 
-    public function createModelCollection(array $records)
+    /**
+     * @param array $records
+     *
+     * @return NodeInterface[]
+     */
+    public function createModelCollectionFromRawData(array $records)
     {
         $collection = [];
         foreach($records as $record) {
-            if($model = $this->createModel($record)) {
+            if($model = $this->createModelFromRawData($record)) {
                 $collection[] = $model;
             }
         }

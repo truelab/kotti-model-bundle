@@ -1,6 +1,7 @@
 <?php
 
 namespace Truelab\KottiModelBundle\Model;
+use Truelab\KottiModelBundle\Repository\RepositoryInterface;
 
 /**
  * Class Base
@@ -9,6 +10,11 @@ namespace Truelab\KottiModelBundle\Model;
 abstract class Base implements \JsonSerializable, \ArrayAccess
 {
     protected $id;
+
+    /**
+     * @var RepositoryInterface
+     */
+    protected $_repository;
 
     /**
      * @return int
@@ -113,5 +119,10 @@ abstract class Base implements \JsonSerializable, \ArrayAccess
     private static function getGetMethod($property)
     {
         return 'get' . ucfirst($property);
+    }
+
+    public function setRepository(RepositoryInterface &$repository)
+    {
+        $this->_repository = $repository;
     }
 }

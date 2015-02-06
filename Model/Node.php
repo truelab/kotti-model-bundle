@@ -157,9 +157,15 @@ class Node extends Base implements NodeInterface
         $this->annotations = $annotations;
     }
 
-    public function getChildren()
+    public function getChildren($class = null, array $criteria = array(), $orderBy = null, $limit = null, $offset = null)
     {
-        // TODO: Implement getChildren() method.
+        if($this->_repository) {
+            return $this->_repository->findAll(null, array_merge([
+                ['WHERE nodes.parent_id = ? ' => $this->getId()]
+            ], $criteria), $orderBy, $limit, $offset);
+        }else{
+            return [];
+        }
     }
 
     public function getParent()

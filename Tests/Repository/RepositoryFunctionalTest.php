@@ -24,12 +24,7 @@ class RepositoryFunctionalTest extends WebTestCase
     public function setUp()
     {
         $this->client = static::createClient();
-        $this->repository = new Repository($this->getDatabaseConnection());
-    }
-
-    public function getDatabaseConnection()
-    {
-        return $this->client->getContainer()->get('database_connection');
+        $this->repository = $this->client->getContainer()->get('truelab_kotti_model.repository');
     }
 
     public function testFindAllNoClassAndCriteria()
@@ -50,7 +45,6 @@ class RepositoryFunctionalTest extends WebTestCase
     public function testFindAllWithTypeFile()
     {
         $nodes = $this->repository->findAll(File::getClass());
-
         $this->assertTrue(is_array($nodes));
     }
 
@@ -96,5 +90,20 @@ class RepositoryFunctionalTest extends WebTestCase
          */
         $document = $this->repository->findByPath($path);
         $this->assertInstanceOf(Document::getClass(), $document);
+
+        $this->assertTrue($document->isInNavigation());
+    }
+
+    public function testGetChildren()
+    {
+        $path = '/en/';
+
+        /**
+         * @var Document $document
+         */
+        $document = $this->repository->findByPath($path);
+        $children = $document['children'];
+
+        $this->assertTrue(is_array($children), 'I expect children is an array');
     }
 }

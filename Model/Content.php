@@ -19,7 +19,7 @@ use Truelab\KottiModelBundle\TypeInfo\TypeInfo;
  *   "association" = "nodes.id = contents.id"
  * })
  */
-class Content extends Node
+class Content extends Node implements ContentInterface
 {
     protected $defaultView;
 
@@ -36,6 +36,16 @@ class Content extends Node
     protected $modificationDate;
 
     protected $inNavigation;
+
+    public function isPublic()
+    {
+        return $this->getState() === 'public';
+    }
+
+    public function isPrivate()
+    {
+        return $this->getState() === 'private';
+    }
 
     /**
      * @return mixed
@@ -162,7 +172,15 @@ class Content extends Node
      */
     public function setInNavigation($inNavigation)
     {
-        $this->inNavigation = $inNavigation;
+        $this->inNavigation = (bool) $inNavigation;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isInNavigation()
+    {
+       return $this->inNavigation === true;
     }
 }
 

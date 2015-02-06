@@ -12,7 +12,7 @@ use Truelab\KottiModelBundle\TypeInfo\TypeInfo;
  *   "association" = "language_roots.id = documents.id"
  * })
  */
-class LanguageRoot extends Document
+class LanguageRoot extends Document implements LanguageRootInterface
 {
 
 }

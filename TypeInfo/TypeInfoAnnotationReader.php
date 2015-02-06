@@ -13,14 +13,20 @@ class TypeInfoAnnotationReader
 {
     private $_annotationReader;
 
-    public function __construct()
+    private $_nodeClass;
+
+    private $_annotationClass;
+
+    public function __construct($annotationClass, $nodeClass)
     {
         $this->_annotationReader = new AnnotationReader();
+        $this->_annotationClass  = $annotationClass;
+        $this->_nodeClass = $nodeClass;
     }
 
     protected function inheritanceTypeInfos($class)
     {
-        if(!$class === 'Truelab\KottiModelBundle\Model\Node') { // FIXME
+        if(!$class === $this->_nodeClass) {
             return $this->allTypeInfos();
         }
 
@@ -35,7 +41,7 @@ class TypeInfoAnnotationReader
     public function typeInfo($class) {
         return $this->_annotationReader->getClassAnnotation(
             new \ReflectionClass($class),
-            'Truelab\KottiModelBundle\TypeInfo\TypeInfo' // FIXME
+            $this->_annotationClass
         );
     }
 

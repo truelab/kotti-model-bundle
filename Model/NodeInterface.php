@@ -1,6 +1,7 @@
 <?php
 
 namespace Truelab\KottiModelBundle\Model;
+use Truelab\KottiModelBundle\Repository\RepositoryInterface;
 
 /**
  * Interface NodeInterface
@@ -13,4 +14,6 @@ interface NodeInterface
     public function getParent();
 
     public function getPath();
+
+    public function setRepository(RepositoryInterface &$repositoryInterface);
 }

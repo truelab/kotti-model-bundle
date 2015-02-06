@@ -4,13 +4,25 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
-    <!--
+
     <services>
-        <service id="truelab_kotti_model.example" class="Truelab\KottiModelBundle\Example">
-            <argument type="service" id="service_id" />
-            <argument>plain_value</argument>
-            <argument>%parameter_name%</argument>
+
+        <service id="truelab_kotti_model.model_factory" class="Truelab\KottiModelBundle\Model\ModelFactory">
+            <argument type="service" id="truelab_kotti_model.type_info.annotation_reader" />
         </service>
+
+        <service id="truelab_kotti_model.type_info.annotation_reader"
+                 class="Truelab\KottiModelBundle\TypeInfo\TypeInfoAnnotationReader">
+            <argument>Truelab\KottiModelBundle\TypeInfo\TypeInfo</argument>
+            <argument>Truelab\KottiModelBundle\Mode\Node</argument>
+        </service>
+
+        <service id="truelab_kotti_model.repository" class="Truelab\KottiModelBundle\Repository\Repository">
+            <argument type="service" id="database_connection" />
+            <argument type="service" id="truelab_kotti_model.type_info.annotation_reader" />
+            <argument type="service" id="truelab_kotti_model.model_factory" />
+        </service>
+
     </services>
-    -->
+
 </container>
