@@ -13,9 +13,20 @@ class ModelFactory
 {
     private $_typeInfoAnnotationReader;
 
-    private $map = [ // FIXME inject from configuration
+    public static $map = [ // FIXME inject from configuration
+        'content'  => 'Truelab\KottiModelBundle\Model\Content',
         'document' => 'Truelab\KottiModelBundle\Model\Document',
-        'content'  => 'Truelab\KottiModelBundle\Model\Content'
+        'file' => 'Truelab\KottiModelBundle\Model\File',
+        'image' => 'Truelab\KottiModelBundle\Model\Image',
+        'language_root' => 'Truelab\KottiModelBundle\Model\LanguageRoot', // KottiMultilanguageBundle
+        //'courses' => 'Truelab\KottiModelBundle\Model\Course', // MipBundle
+        'event' => 'Truelab\KottiModelBundle\Model\Event', // KottiCalendarBundle,
+        'calendar' => 'Truelab\KottiModelBundle\Model\Calendar',
+        'base_box_manager' => 'Truelab\KottiModelBundle\Model\BaseBoxManager',
+        'below_content_box_manager' => 'Truelab\KottiModelBundle\Model\BelowContentBoxManager',
+        'above_content_box_manager' => 'Truelab\KottiModelBundle\Model\AboveContentBoxManager',
+        'left_box_manager' => 'Truelab\KottiModelBundle\Model\LeftBoxManager',
+        'right_box_manager' => 'Truelab\KottiModelBundle\Model\RightBoxManager'
     ];
 
     public function __construct()
@@ -23,15 +34,10 @@ class ModelFactory
         $this->_typeInfoAnnotationReader = new TypeInfoAnnotationReader();
     }
 
-    public function addModel($type, $class)
-    {
-        $this->map[$type] = $class;
-    }
-
     public function createModel(array $record)
     {
         $type      = $record['nodes_type']; // FIXME
-        $class     = $this->map[$type];
+        $class     = self::$map[$type];
         $typeInfos = $this->_typeInfoAnnotationReader->inheritanceLineageTypeInfos($class);
 
         $object = new $class(); // FIXME

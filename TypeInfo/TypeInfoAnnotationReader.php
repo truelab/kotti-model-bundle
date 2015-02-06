@@ -3,6 +3,7 @@
 namespace Truelab\KottiModelBundle\TypeInfo;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Truelab\KottiModelBundle\Util\Location;
+use Truelab\KottiModelBundle\Model\ModelFactory;
 
 /**
  * Class TypeInfoAnnotationReader
@@ -40,7 +41,11 @@ class TypeInfoAnnotationReader
 
     protected function allTypeInfos()
     {
-        return [];
+        $typeInfos = [];
+        foreach(ModelFactory::$map as $type => $class) {
+            $typeInfos[] = $this->typeInfo($class);
+        }
+        return $typeInfos;
     }
 
     /**
@@ -50,6 +55,10 @@ class TypeInfoAnnotationReader
      */
     public function inheritanceLineageTypeInfos($class)
     {
+        if(!$class) {
+            return $this->allTypeInfos();
+        }
+
         return array_map(function ($class)  {
             return $this->typeInfo($class);
         }, $this->inheritanceLineage($class));

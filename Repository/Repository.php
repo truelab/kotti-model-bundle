@@ -4,6 +4,7 @@ namespace Truelab\KottiModelBundle\Repository;
 
 use Doctrine\DBAL\Connection;
 use Truelab\KottiModelBundle\Model\ModelFactory;
+use Truelab\KottiModelBundle\Model\Node;
 use Truelab\KottiModelBundle\Model\NodeInterface;
 use Truelab\KottiModelBundle\TypeInfo\TypeInfo;
 use Truelab\KottiModelBundle\TypeInfo\TypeInfoAnnotationReader;
@@ -41,34 +42,41 @@ class Repository implements RepositoryInterface
      *
      * @return NodeInterface[]
      */
-    public function findAll($class, array $criteria = null, array $orderBy = null, $limit = null, $offset = null)
+    public function findAll($class = null, array $criteria = null, array $orderBy = null, $limit = null, $offset = null)
     {
+        $nodeTypeInfo = $this->_typeAnnotationReader->typeInfo(Node::getClass());
+
         // TODO cache this infos!!! injected map?
-        $lineageTypeInfos = $this->_typeAnnotationReader->inheritanceLineageTypeInfos($class);
+        // can return all type infos if $class == null
+        $typeInfos = $this->_typeAnnotationReader->inheritanceLineageTypeInfos($class);
 
 
         $qb = $this->_connection
             ->createQueryBuilder();
 
         //
-        foreach($lineageTypeInfos as $typeInfo) {
+        foreach($typeInfos as $typeInfo) {
             foreach($typeInfo->getFields() as $field) {
                 $qb->addSelect($field->getDottedName() . ' AS ' . $field->getAlias());
             }
         }
 
-        $reverseTypeInfos = array_reverse($lineageTypeInfos, true);
-        $nodeTypeInfo = array_shift($reverseTypeInfos);
+        if($class) {
+
+            // Inheritance type infos remove node
+            $typeInfos = array_reverse($typeInfos, true);
+            array_shift($typeInfos);
+
+        }
 
 
         $sql = $qb->getSQL();
-
-
         $sql .= ' ' . $nodeTypeInfo->getTable();
+
         /**
          * @var $typeInfo TypeInfo
          */
-        foreach($reverseTypeInfos as $typeInfo) {
+        foreach($typeInfos as $typeInfo) {
             $sql .= ' JOIN ' . $typeInfo->getTable() . ' ON ' . $typeInfo->getAssociation();
         }
 

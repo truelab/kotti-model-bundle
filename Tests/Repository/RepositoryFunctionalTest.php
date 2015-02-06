@@ -3,6 +3,7 @@
 namespace Truelab\KottiModelBundle\Tests\Repository;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Truelab\KottiModelBundle\Model\File;
 use Truelab\KottiModelBundle\Repository\Repository;
 use Truelab\KottiModelBundle\Model\Document;
 
@@ -30,15 +31,25 @@ class RepositoryFunctionalTest extends WebTestCase
         return $this->client->getContainer()->get('database_connection');
     }
 
+    public function testFindAllWithoutType()
+    {
+        //$allDatabase = $this->repository->findAll();
+    }
+
     public function testFindAllWithType()
     {
-        $repository = new Repository($this->getDatabaseConnection());
-
-        $nodes = $repository->findAll(Document::getClass());
+        $nodes = $this->repository->findAll(Document::getClass());
 
         $this->assertTrue(is_array($nodes), 'I expect result is array');
         $this->assertGreaterThan(1, count($nodes));
         $this->assertInstanceOf(Document::getClass(), $nodes[0]);
+    }
+
+    public function testFindAllWithTypeFile()
+    {
+        $nodes = $this->repository->findAll(File::getClass());
+
+        $this->assertTrue(is_array($nodes));
     }
 
     public function testFindOneWithType()
