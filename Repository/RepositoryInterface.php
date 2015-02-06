@@ -16,7 +16,7 @@ interface RepositoryInterface
      *
      * @return NodeInterface[]
      */
-    public function findAll($class, array $criteria = null, array $orderBy = null, $limit = null, $offset = null);
+    public function findAll($class = null, array $criteria = null, array $orderBy = null, $limit = null, $offset = null);
 
     /**
      * @param string $class
@@ -24,7 +24,7 @@ interface RepositoryInterface
      *
      * @return NodeInterface
      */
-    public function findOne($class, array $criteria = null);
+    public function findOne($class = null, array $criteria = null);
 
     /**
      * @param $class
@@ -33,4 +33,11 @@ interface RepositoryInterface
      * @return NodeInterface
      */
     public function find($class, $identifier);
+
+    /**
+     * @param string $path
+     *
+     * @return NodeInterface
+     */
+    public function findByPath($path);
 }

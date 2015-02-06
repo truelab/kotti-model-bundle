@@ -4,6 +4,7 @@ namespace Truelab\KottiModelBundle\Tests\Repository;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Truelab\KottiModelBundle\Model\File;
+use Truelab\KottiModelBundle\Model\LanguageRoot;
 use Truelab\KottiModelBundle\Repository\Repository;
 use Truelab\KottiModelBundle\Model\Document;
 
@@ -31,9 +32,10 @@ class RepositoryFunctionalTest extends WebTestCase
         return $this->client->getContainer()->get('database_connection');
     }
 
-    public function testFindAllWithoutType()
+    public function testFindAllNoClassAndCriteria()
     {
-        //$allDatabase = $this->repository->findAll();
+        $nodes = $this->repository->findAll(null);
+        $this->assertGreaterThan(1, count($nodes));
     }
 
     public function testFindAllWithType()
@@ -69,5 +71,30 @@ class RepositoryFunctionalTest extends WebTestCase
         $this->assertTrue(is_array($document->getAcl()), 'I expect acl is an array');
         $this->assertJson(json_encode($document));
         $this->assertArrayHasKey('path', json_decode(json_encode($document), true));
+    }
+
+    public function testFindOneByCriteria()
+    {
+        $path = '/en/';
+
+        /**
+         * @var Document $document
+         */
+        $document = $this->repository->findOne(null, [
+            ['WHERE nodes.path = ?' => $path]
+        ]);
+
+        $this->assertInstanceOf(LanguageRoot::getClass(), $document);
+    }
+
+    public function testFindByPath()
+    {
+        $path = '/en/mip/';
+
+        /**
+         * @var Document $document
+         */
+        $document = $this->repository->findByPath($path);
+        $this->assertInstanceOf(Document::getClass(), $document);
     }
 }

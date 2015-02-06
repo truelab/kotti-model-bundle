@@ -37,7 +37,14 @@ class ModelFactory
     public function createModel(array $record)
     {
         $type      = $record['nodes_type']; // FIXME
+
+        if(!isset(self::$map[$type])) {
+            //throw new \Exception(sprintf('Unknown type "%s"!', $type));
+            return null;
+        }
+
         $class     = self::$map[$type];
+
         $typeInfos = $this->_typeInfoAnnotationReader->inheritanceLineageTypeInfos($class);
 
         $object = new $class(); // FIXME
@@ -58,7 +65,9 @@ class ModelFactory
     {
         $collection = [];
         foreach($records as $record) {
-            $collection[] = $this->createModel($record);
+            if($model = $this->createModel($record)) {
+                $collection[] = $model;
+            }
         }
         return $collection;
     }

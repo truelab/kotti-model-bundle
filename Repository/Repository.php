@@ -54,19 +54,23 @@ class Repository implements RepositoryInterface
         $qb = $this->_connection
             ->createQueryBuilder();
 
-        //
+        if(!$class) {
+            array_unshift($typeInfos, $nodeTypeInfo);
+        }
+
         foreach($typeInfos as $typeInfo) {
             foreach($typeInfo->getFields() as $field) {
                 $qb->addSelect($field->getDottedName() . ' AS ' . $field->getAlias());
             }
         }
 
-        if($class) {
 
-            // Inheritance type infos remove node
+        // remove node before join sql parts
+        if($class) {
             $typeInfos = array_reverse($typeInfos, true);
             array_shift($typeInfos);
-
+        }else{
+            array_shift($typeInfos);
         }
 
 
@@ -77,27 +81,49 @@ class Repository implements RepositoryInterface
          * @var $typeInfo TypeInfo
          */
         foreach($typeInfos as $typeInfo) {
-            $sql .= ' JOIN ' . $typeInfo->getTable() . ' ON ' . $typeInfo->getAssociation();
+            $sql .= ( $class ? ' JOIN ' : ' LEFT JOIN ') . $typeInfo->getTable() . ' ON ' . $typeInfo->getAssociation();
         }
 
+        $params = [];
         if($class) {
-            $sql .= ' WHERE nodes.type = "' .$this->_typeAnnotationReader->typeInfo($class)->getType() . '"';
+            $sql .= ' WHERE nodes.type = ? ';
+            // node.type param
+            $params[] = $this->_typeAnnotationReader->typeInfo($class)->getType();
         }
 
-        // CRITERIA
-        if(!$class && $criteria) {
-            $sql .= ' AND ';
-        }
 
         if($criteria) {
-            foreach($criteria as $index => $c) {
-                $sql .= ( $class || $index > 0 ? ' AND ' : '') . $c;
+            $index = 0;
+            foreach($criteria as $key => $c) {
+                if(!$class) {
+                    if($index === 0) {
+                        $sql .= ' ' . $this->prepareCriteria($c, $params);
+                    }else{
+                        $sql .= ' AND ' . $this->prepareCriteria($c, $params);
+                    }
+
+                }else{
+                    $sql .= ( $class || $key > 0 ? ' AND ' : '') . $this->prepareCriteria($c, $params);
+                }
+                $index++;
             }
         }
 
         return $this->_modelFactory->createModelCollection(
-            $this->_connection->executeQuery($sql)->fetchAll()
+            $this->_connection->executeQuery($sql, $params)->fetchAll()
         );
+    }
+
+    protected function prepareCriteria($criteria, &$params)
+    {
+        if(is_string($criteria)) {
+            return $criteria;
+        }
+
+        if(is_array($criteria)) {
+            $params[] = $criteria[key($criteria)];
+            return key($criteria);
+        }
     }
 
     /**
@@ -107,16 +133,20 @@ class Repository implements RepositoryInterface
      * @return null|NodeInterface
      * @throws \Exception
      */
-    public function findOne($class, array $criteria = [])
+    public function findOne($class = null, array $criteria = [])
     {
-        // TODO: Implement findOne() method.
         $node = $this->findAll($class, $criteria);
 
         if(empty($node)) {
+
            return null;
+
         }else if(is_array($node) && count($node) !== 1){
+
             throw new \Exception('Expected one result but got more.');
+
         }else{
+            // TODO check and throws unexpected type exception if class/type?
             return $node[0];
         }
     }
@@ -128,9 +158,15 @@ class Repository implements RepositoryInterface
      */
     public function find($class, $identifier)
     {
-        return $this->findOne($class, array(
+        return $this->findOne($class, [
             'nodes.id = ' . $identifier
-        ));
+        ]);
     }
 
+    public function findByPath($path)
+    {
+        return $this->findOne(null, [
+            [ 'WHERE nodes.path = ?' => $path ]
+        ]);
+    }
 }
