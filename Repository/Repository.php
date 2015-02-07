@@ -98,15 +98,17 @@ class Repository implements RepositoryInterface
         if($criteria) {
             $index = 0;
             foreach($criteria as $key => $c) {
+
                 if(!$class) {
+
                     if($index === 0) {
-                        $sql .= ' ' . $this->prepareCriteria($c, $params);
+                        $sql .= ' ' . $this->prepareCriteria($key, $c, $params);
                     }else{
-                        $sql .= ' AND ' . $this->prepareCriteria($c, $params);
+                        $sql .= ' AND ' . $this->prepareCriteria($key, $c, $params);
                     }
 
                 }else{
-                    $sql .= ( $class || $index > 0 ? ' AND ' : '') . $this->prepareCriteria($c, $params);
+                    $sql .= ( $class || $index > 0 ? ' AND ' : '') . $this->prepareCriteria($key, $c, $params);
                 }
                 $index++;
             }
@@ -123,15 +125,42 @@ class Repository implements RepositoryInterface
         return $collection;
     }
 
-    protected function prepareCriteria($criteria, &$params)
+    protected function prepareCriteria($key, $value, &$params)
     {
-        if(is_string($criteria)) {
-            return $criteria;
+        // 'contents.id = 3'
+        if (is_int($key) && is_string($value)) {
+            return $value;
         }
 
-        if(is_array($criteria)) {
-            $params[] = $criteria[key($criteria)];
-            return key($criteria);
+        // 'contents.id = ? ' => $id
+        if (is_string($key)) {
+
+            // 'nodes.type = ? OR contents.in_navigation = ?' => ['document', true ]
+            if (is_array($value)) {
+
+                foreach($value as $val) {
+                    $params[] = $val;
+                }
+
+            } else {
+                $params[] = $value;
+            }
+
+            return $key;
+        }
+
+        // [ 'contents.id' => $id ]
+        if (is_array($value)) {
+
+            if(is_array($value[key($value)])) {
+                foreach($value[key($value)] as $val) {
+                    $params[] = $val;
+                }
+            }else{
+                $params[] = $value[key($value)];
+            }
+
+            return key($value);
         }
     }
 

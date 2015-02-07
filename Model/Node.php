@@ -175,16 +175,31 @@ class Node extends Base implements NodeInterface
                 return $this->children;
             }
 
-            $this->children = $this->_repository->findAll($class, array_merge([
+            $mergedCriteria = array_merge(
                 [(!$class ? 'WHERE '  :  ' ' ) .'nodes.parent_id = ? ' => $this->getId()],
-                ['contents.in_navigation = ? ' => true]
-            ], $criteria), $orderBy, $limit, $offset);
+                $criteria
+            );
+
+
+            $this->children = $this->_repository->findAll($class, $mergedCriteria, $orderBy, $limit, $offset);
 
             return $this->children;
 
         }else{
             return [];
         }
+    }
+
+    public function hasInNavigationChildren()
+    {
+        return count($this->getInNavigationChildren()) > 0;
+    }
+
+    public function getInNavigationChildren()
+    {
+        return $this->getChildren(null, [
+            'contents.in_navigation = ?' => true
+        ]);
     }
 
     public function hasChildren($class = null, array $criteria = array())
