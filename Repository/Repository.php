@@ -106,7 +106,7 @@ class Repository implements RepositoryInterface
                     }
 
                 }else{
-                    $sql .= ( $class || $key > 0 ? ' AND ' : '') . $this->prepareCriteria($c, $params);
+                    $sql .= ( $class || $index > 0 ? ' AND ' : '') . $this->prepareCriteria($c, $params);
                 }
                 $index++;
             }

@@ -15,5 +15,7 @@ interface NodeInterface
 
     public function getPath();
 
+    public function hasChildren();
+
     public function setRepository(RepositoryInterface &$repositoryInterface);
 }

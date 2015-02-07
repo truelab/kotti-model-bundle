@@ -17,6 +17,8 @@ class TypeInfoAnnotationReader
 
     private $_annotationClass;
 
+    private $_cache = [];
+
     public function __construct($annotationClass, $nodeClass)
     {
         $this->_annotationReader = new AnnotationReader();
@@ -39,10 +41,17 @@ class TypeInfoAnnotationReader
      * @return TypeInfo
      */
     public function typeInfo($class) {
-        return $this->_annotationReader->getClassAnnotation(
+
+        if(isset($cache[$class])) {
+            return $cache[$class];
+        }
+
+        $cache[$class] = $this->_annotationReader->getClassAnnotation(
             new \ReflectionClass($class),
             $this->_annotationClass
         );
+
+        return $cache[$class];
     }
 
     protected function allTypeInfos()

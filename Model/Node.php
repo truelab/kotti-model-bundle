@@ -29,6 +29,8 @@ class Node extends Base implements NodeInterface
 
     protected $annotations;
 
+    protected $children;
+
     /**
      * @return mixed
      */
@@ -159,12 +161,38 @@ class Node extends Base implements NodeInterface
 
     public function getChildren($class = null, array $criteria = array(), $orderBy = null, $limit = null, $offset = null)
     {
+
         if($this->_repository) {
-            return $this->_repository->findAll(null, array_merge([
-                ['WHERE nodes.parent_id = ? ' => $this->getId()]
+
+            if(is_array($this->children)) {
+
+                if($class) {
+                    return array_filter($this->children, function ($child) use($class) {
+                        return get_class($child) === $class;
+                    });
+                }
+
+                return $this->children;
+            }
+
+            $this->children = $this->_repository->findAll($class, array_merge([
+                [(!$class ? 'WHERE '  :  ' ' ) .'nodes.parent_id = ? ' => $this->getId()],
+                ['contents.in_navigation = ? ' => true]
             ], $criteria), $orderBy, $limit, $offset);
+
+            return $this->children;
+
         }else{
             return [];
+        }
+    }
+
+    public function hasChildren($class = null, array $criteria = array())
+    {
+        if(!$this->children) {
+            return count($this->getChildren()) > 0;
+        }else{
+            return count($this->children) > 0;
         }
     }
 
@@ -172,4 +200,5 @@ class Node extends Base implements NodeInterface
     {
         // TODO: Implement getParent() method.
     }
+
 }

@@ -13,7 +13,7 @@ use Truelab\KottiModelBundle\TypeInfo\TypeInfo;
  *   "association" = "documents.id = contents.id"
  * })
  */
-class Document extends Content
+class Document extends Content implements DocumentInterface
 {
     protected $body;
 

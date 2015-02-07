@@ -59,7 +59,7 @@ class RepositoryFunctionalTest extends WebTestCase
             'nodes.path = "' . $path . '"'
         ));
 
-        $this->assertInstanceOf(Document::getClass(), $document);
+        $this->assertEquals(Document::getClass(), get_class($document));
         $this->assertEquals($document->getPath(), $path);
         $this->assertInstanceOf('\DateTime', $document->getCreationDate());
         $this->assertTrue(is_array($document->getAcl()), 'I expect acl is an array');
@@ -102,8 +102,14 @@ class RepositoryFunctionalTest extends WebTestCase
          * @var Document $document
          */
         $document = $this->repository->findByPath($path);
-        $children = $document['children'];
 
-        $this->assertTrue(is_array($children), 'I expect children is an array');
+        // get children of the same type
+        $children = $document
+            ->getChildren(get_class($document));
+
+        foreach($children as $child) {
+            $this->assertEquals(Document::getClass(), get_class($child));
+        }
+
     }
 }
