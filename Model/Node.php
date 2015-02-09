@@ -187,7 +187,6 @@ class Node extends Base implements NodeInterface
                 $criteria
             );
 
-
             $this->children = $this->_repository->findAll($class, $mergedCriteria, $orderBy, $limit, $offset);
 
             return $this->children;
