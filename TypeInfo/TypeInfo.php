@@ -10,7 +10,7 @@ class TypeInfo
 {
     protected $options;
 
-    private $_fields;
+    private $fields;
 
     public function __construct($options)
     {
@@ -20,7 +20,18 @@ class TypeInfo
 
         if($this->options) {
             $this->createFields();
+            $this->createAlias();
         }
+    }
+
+    public function setClass($class)
+    {
+        $this->options['class'] = $class;
+    }
+
+    public function getClass()
+    {
+        return isset($this->options['class']) ? $this->options['class'] : null;
     }
 
     public function getTable()
@@ -43,12 +54,17 @@ class TypeInfo
         return isset($this->options['association']) ? $this->options['association'] : null;
     }
 
+    public function getAlias()
+    {
+        return isset($this->options['alias']) ? $this->options['alias'] : null;
+    }
+
     /**
      * @return TypeInfoField[]
      */
     public function getFields()
     {
-        return $this->_fields;
+        return $this->fields;
     }
 
     public function getFieldByAlias($alias)
@@ -78,7 +94,14 @@ class TypeInfo
             $fieldsCollection[] = new TypeInfoField($this->getTable(), $field);
         }
 
-        $this->_fields = $fieldsCollection;
+        $this->fields = $fieldsCollection;
+    }
+
+    private function createAlias()
+    {
+        if(!isset($this->options['alias'])) {
+            $this->options['alias'] = $this->getType();
+        }
     }
 
 }

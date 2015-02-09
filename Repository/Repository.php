@@ -19,10 +19,11 @@ class Repository implements RepositoryInterface
     /**
      * @var Connection
      */
-    private $_connection;
+    protected $connection;
 
-    private $_typeAnnotationReader;
+    protected $typeAnnotationReader;
 
+    protected $modelFactory;
 
     /**
      * @param Connection $connection
@@ -33,9 +34,9 @@ class Repository implements RepositoryInterface
                                 TypeInfoAnnotationReader $typeInfoAnnotationReader,
                                 ModelFactory $modelFactory)
     {
-        $this->_connection = $connection;
-        $this->_typeAnnotationReader = $typeInfoAnnotationReader;
-        $this->_modelFactory = $modelFactory;
+        $this->connection = $connection;
+        $this->typeAnnotationReader = $typeInfoAnnotationReader;
+        $this->modelFactory = $modelFactory;
     }
 
     /**
@@ -49,13 +50,13 @@ class Repository implements RepositoryInterface
      */
     public function findAll($class = null, array $criteria = null, array $orderBy = null, $limit = null, $offset = null)
     {
-        $nodeTypeInfo = $this->_typeAnnotationReader->typeInfo(Node::getClass());
 
-        // can return all type infos if $class == null
-        $typeInfos = $this->_typeAnnotationReader->inheritanceLineageTypeInfos($class);
+        // can return all type infos if $class == null FIXME
+        $typeInfos = $this->typeAnnotationReader->inheritanceLineageTypeInfos($class);
+        $nodeTypeInfo = $this->typeAnnotationReader->typeInfo(Node::getClass()); // FIXME
 
 
-        $qb = $this->_connection
+        $qb = $this->connection
             ->createQueryBuilder();
 
         if(!$class) {
@@ -91,7 +92,7 @@ class Repository implements RepositoryInterface
         if($class) {
             $sql .= ' WHERE nodes.type = ? ';
             // node.type param
-            $params[] = $this->_typeAnnotationReader->typeInfo($class)->getType();
+            $params[] = $this->typeAnnotationReader->typeInfo($class)->getType();
         }
 
 
@@ -114,8 +115,8 @@ class Repository implements RepositoryInterface
             }
         }
 
-        $collection = $this->_modelFactory->createModelCollectionFromRawData(
-            $this->_connection->executeQuery($sql, $params)->fetchAll()
+        $collection = $this->modelFactory->createModelCollectionFromRawData(
+            $this->connection->executeQuery($sql, $params)->fetchAll()
         );
 
         foreach($collection as $node) {

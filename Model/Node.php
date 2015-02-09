@@ -100,6 +100,11 @@ class Node extends Base implements NodeInterface
      */
     public function getAcl()
     {
+        if(is_array($this->acl)) {
+            return $this->acl;
+        }else{
+            $this->acl = json_decode($this->acl);
+        }
         return $this->acl;
     }
 
@@ -108,7 +113,7 @@ class Node extends Base implements NodeInterface
      */
     public function setAcl($acl)
     {
-        $this->acl = json_decode($acl);
+        $this->acl = $acl;
     }
 
     /**
@@ -213,7 +218,7 @@ class Node extends Base implements NodeInterface
 
     public function getParent()
     {
-        // TODO: Implement getParent() method.
+        return $this->_repository->find(null, $this->parentId);
     }
 
 }

@@ -11,24 +11,24 @@ use Truelab\KottiModelBundle\Model\ModelFactory;
  */
 class TypeInfoAnnotationReader
 {
-    private $_annotationReader;
+    private $annotationReader;
 
-    private $_nodeClass;
+    private $nodeClass;
 
-    private $_annotationClass;
+    private $annotationClass;
 
-    private $_cache = [];
+    private $cache = [];
 
     public function __construct($annotationClass, $nodeClass)
     {
-        $this->_annotationReader = new AnnotationReader();
-        $this->_annotationClass  = $annotationClass;
-        $this->_nodeClass = $nodeClass;
+        $this->annotationReader = new AnnotationReader();
+        $this->annotationClass  = $annotationClass;
+        $this->nodeClass = $nodeClass;
     }
 
     protected function inheritanceTypeInfos($class)
     {
-        if(!$class === $this->_nodeClass) {
+        if(!$class === $this->nodeClass) {
             return $this->allTypeInfos();
         }
 
@@ -42,16 +42,18 @@ class TypeInfoAnnotationReader
      */
     public function typeInfo($class) {
 
-        if(isset($cache[$class])) {
-            return $cache[$class];
+        if(isset($this->cache[$class])) {
+            return $this->cache[$class];
         }
 
-        $cache[$class] = $this->_annotationReader->getClassAnnotation(
+        $this->cache[$class] = $this->annotationReader->getClassAnnotation(
             new \ReflectionClass($class),
-            $this->_annotationClass
+            $this->annotationClass
         );
 
-        return $cache[$class];
+        $this->cache[$class]->setClass($class);
+
+        return $this->cache[$class];
     }
 
     protected function allTypeInfos()
@@ -84,5 +86,35 @@ class TypeInfoAnnotationReader
         return array_filter(Location::inheritanceLineage($class), function ($class) {
             return !(new \ReflectionClass($class))->isAbstract();
         });
+    }
+
+    public function getClassByAlias($alias)
+    {
+        if(!$alias) {
+            return null;
+        }
+
+        /**
+         * @var TypeInfo $typeInfo
+         */
+        foreach($this->cache as $class => $typeInfo)
+        {
+            if($typeInfo->getAlias() === $alias) {
+                return $class;
+            }
+        }
+
+        $allTypeInfos = $this->allTypeInfos();
+
+        /**
+         * @var TypeInfo $typeInfo
+         */
+        foreach($allTypeInfos as $typeInfo)
+        {
+            if($typeInfo->getAlias() === $alias)
+            {
+                return $typeInfo->getClass();
+            }
+        }
     }
 }

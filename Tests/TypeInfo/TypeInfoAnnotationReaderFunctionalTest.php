@@ -8,7 +8,7 @@ use Truelab\KottiModelBundle\TypeInfo\TypeInfoAnnotationReader;
  * Class TypeInfoAnnotationReaderTest
  * @package Truelab\KottiModelBundle\Tests\TypeInfo
  */
-class TypeInfoAnnotationReaderTest extends \PHPUnit_Framework_TestCase
+class TypeInfoAnnotationReaderFunctionalTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var TypeInfoAnnotationReader
@@ -28,5 +28,11 @@ class TypeInfoAnnotationReaderTest extends \PHPUnit_Framework_TestCase
         $all = $this->typeInfoAnnotationReader->inheritanceLineageTypeInfos(null);
 
         $this->assertCount(count(ModelFactory::$map), $all);
+    }
+
+    public function testGetClassByAlias()
+    {
+        $class = $this->typeInfoAnnotationReader->getClassByAlias('document');
+        $this->assertEquals('Truelab\KottiModelBundle\Model\Document', $class);
     }
 }

@@ -23,6 +23,13 @@
             <argument type="service" id="truelab_kotti_model.model_factory" />
         </service>
 
+        <service id="truelab_kotti_model.alias_repository"
+                 class="Truelab\KottiModelBundle\Repository\AliasRepository">
+            <argument type="service" id="database_connection" />
+            <argument type="service" id="truelab_kotti_model.type_info.annotation_reader" />
+            <argument type="service" id="truelab_kotti_model.model_factory" />
+        </service>
+
     </services>
 
 </container>
