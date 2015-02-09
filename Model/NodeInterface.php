@@ -9,13 +9,36 @@ use Truelab\KottiModelBundle\Repository\RepositoryInterface;
  */
 interface NodeInterface
 {
-    public function getChildren();
-
-    public function getParent();
-
-    public function getPath();
-
+    /**
+     * @return boolean
+     */
     public function hasChildren();
 
+    /**
+     * @return NodeInterface[]
+     */
+    public function getChildren();
+
+    /**
+     * @return boolean
+     */
+    public function hasParent();
+
+    /**
+     * @return NodeInterface
+     */
+    public function getParent();
+
+    /**
+     * @return string
+     */
+    public function getPath();
+
+
+    /**
+     * @param RepositoryInterface $repositoryInterface
+     *
+     * @return mixed
+     */
     public function setRepository(RepositoryInterface &$repositoryInterface);
 }

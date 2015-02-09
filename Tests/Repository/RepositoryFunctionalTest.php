@@ -110,6 +110,37 @@ class RepositoryFunctionalTest extends WebTestCase
         foreach($children as $child) {
             $this->assertEquals(Document::getClass(), get_class($child));
         }
+    }
 
+    public function testGetParent()
+    {
+        $parentPath = '/en/';
+        $childPath  = '/en/mip/';
+        $document = $this->repository->findByPath($childPath);
+        $this->assertEquals($parentPath, $document->getParent()->getPath());
+    }
+
+    public function testGetParent2()
+    {
+        $childPath  = '/en/mip/';
+        $document = $this->repository->findByPath($childPath);
+        $this->assertEquals('/', $document->getParent()->getParent()->getPath());
+    }
+
+    public function testGetParent3()
+    {
+        $childPath  = '/en/mip/';
+        $document = $this->repository->findByPath($childPath);
+        $this->assertEquals(null, $document->getParent()->getParent()->getParent());
+    }
+
+    public function hasParent()
+    {
+        $childPath = '/en/mip/';
+        $document = $this->repository->findByPath($childPath);
+        $this->assertTrue($document->hasParent());
+
+        $root = $this->repository->findByPath('/');
+        $this->assertFalse($root->hasParent());
     }
 }

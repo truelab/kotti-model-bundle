@@ -34,7 +34,6 @@ class AliasRepository extends Repository
             // alias is a existing class name
             return parent::findAll($alias, $criteria, $orderBy, $limit, $offset);
         }
-
         $class = $this->typeAnnotationReader->getClassByAlias($alias);
         return parent::findAll($class, $criteria, $orderBy, $limit, $offset);
     }

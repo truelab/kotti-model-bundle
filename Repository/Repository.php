@@ -69,6 +69,13 @@ class Repository implements RepositoryInterface
             }
         }
 
+
+        $sql = $qb->getSQL();
+        $sql .= ' ' . $nodeTypeInfo->getTable();
+
+
+        // ------ JOIN
+
         // remove node before join sql parts
         if($class) {
             $typeInfos = array_reverse($typeInfos, true);
@@ -77,10 +84,6 @@ class Repository implements RepositoryInterface
             array_shift($typeInfos);
         }
 
-
-        $sql = $qb->getSQL();
-        $sql .= ' ' . $nodeTypeInfo->getTable();
-
         /**
          * @var $typeInfo TypeInfo
          */
@@ -88,37 +91,40 @@ class Repository implements RepositoryInterface
             $sql .= ( $class ? ' JOIN ' : ' LEFT JOIN ') . $typeInfo->getTable() . ' ON ' . $typeInfo->getAssociation();
         }
 
+
+        // ------- WHERE
         $params = [];
+        $preparedCriteria = [];
+
         if($class) {
-            $sql .= ' WHERE nodes.type = ? ';
+            $preparedCriteria[] = 'nodes.type = ?';
             // node.type param
             $params[] = $this->typeAnnotationReader->typeInfo($class)->getType();
         }
 
-
         if($criteria) {
-            $index = 0;
             foreach($criteria as $key => $c) {
-
-                if(!$class) {
-
-                    if($index === 0) {
-                        $sql .= ' ' . $this->prepareCriteria($key, $c, $params);
-                    }else{
-                        $sql .= ' AND ' . $this->prepareCriteria($key, $c, $params);
-                    }
-
-                }else{
-                    $sql .= ( $class || $index > 0 ? ' AND ' : '') . $this->prepareCriteria($key, $c, $params);
-                }
-                $index++;
+                $preparedCriteria[] = $this->prepareCriteria($key, $c, $params);
             }
+        }
+
+        // sanitize criteria
+        foreach($preparedCriteria as &$cc)
+        {
+            $cc = str_replace('WHERE', '', $cc);
+            $cc = trim($cc);
+        }
+
+        if(!empty($preparedCriteria)) {
+            $whereSql = ' WHERE ' . (implode(' AND ', $preparedCriteria));
+            $sql .= $whereSql;
         }
 
         $collection = $this->modelFactory->createModelCollectionFromRawData(
             $this->connection->executeQuery($sql, $params)->fetchAll()
         );
 
+        // FIXME
         foreach($collection as $node) {
             $node->setRepository($this);
         }

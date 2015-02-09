@@ -31,6 +31,8 @@ class Node extends Base implements NodeInterface
 
     protected $children;
 
+    protected $parent;
+
     /**
      * @return mixed
      */
@@ -216,8 +218,22 @@ class Node extends Base implements NodeInterface
         }
     }
 
+    public function hasParent($class = null, array $criteria = array())
+    {
+        if(!$this->parent) {
+            return  $this->getParent() != null;
+        }else{
+            return  $this->parent != null;
+        }
+    }
+
+
     public function getParent()
     {
+        if(!$this->parentId) {
+            return null;
+        }
+
         return $this->_repository->find(null, $this->parentId);
     }
 
