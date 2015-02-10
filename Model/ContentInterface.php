@@ -7,7 +7,7 @@ namespace Truelab\KottiModelBundle\Model;
  *
  * @package Truelab\KottiORMBundle\Model
  */
-interface ContentInterface
+interface ContentInterface extends NodeInterface
 {
     const STATE_PUBLIC = 'public';
     const STATE_PRIVATE = 'private';

@@ -3,6 +3,7 @@
 namespace Truelab\KottiModelBundle\Repository;
 
 
+use Truelab\KottiModelBundle\Model\ContentInterface;
 use Truelab\KottiModelBundle\Model\NodeInterface;
 
 interface RepositoryInterface
@@ -22,7 +23,7 @@ interface RepositoryInterface
      * @param string $class
      * @param array $criteria
      *
-     * @return NodeInterface
+     * @return NodeInterface|ContentInterface
      */
     public function findOne($class = null, array $criteria = null);
 

@@ -1,13 +1,12 @@
 <?php
 
 namespace Truelab\KottiModelBundle\Model;
-use Truelab\KottiModelBundle\Repository\RepositoryInterface;
 
 /**
  * Interface NodeInterface
  * @package Truelab\KottiModelBundle\Model
  */
-interface NodeInterface
+interface NodeInterface extends BaseInterface
 {
     /**
      * @return boolean
@@ -15,7 +14,7 @@ interface NodeInterface
     public function hasChildren();
 
     /**
-     * @return NodeInterface[]
+     * @return self[]
      */
     public function getChildren();
 
@@ -25,7 +24,7 @@ interface NodeInterface
     public function hasParent();
 
     /**
-     * @return NodeInterface
+     * @return self
      */
     public function getParent();
 
@@ -34,11 +33,11 @@ interface NodeInterface
      */
     public function getPath();
 
-
     /**
-     * @param RepositoryInterface $repositoryInterface
+     * @param self $node
      *
-     * @return mixed
+     * @return boolean
      */
-    public function setRepository(RepositoryInterface &$repositoryInterface);
+    public function equals(self $node);
+
 }

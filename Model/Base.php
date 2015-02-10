@@ -12,9 +12,10 @@ abstract class Base implements \JsonSerializable, \ArrayAccess
     protected $id;
 
     /**
+     * FIXME
      * @var RepositoryInterface
      */
-    protected $_repository;
+    protected $repository;
 
     /**
      * @return int
@@ -32,6 +33,15 @@ abstract class Base implements \JsonSerializable, \ArrayAccess
     {
         $this->id = $id;
         return $this;
+    }
+
+    /**
+     * FIXME
+     * @param RepositoryInterface $repository
+     */
+    public function setRepository(RepositoryInterface $repository)
+    {
+        $this->repository = $repository;
     }
 
     /**
@@ -121,8 +131,5 @@ abstract class Base implements \JsonSerializable, \ArrayAccess
         return 'get' . ucfirst($property);
     }
 
-    public function setRepository(RepositoryInterface &$repository)
-    {
-        $this->_repository = $repository;
-    }
+
 }

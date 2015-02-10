@@ -2,6 +2,7 @@
 
 namespace Truelab\KottiModelBundle\Model;
 
+use Truelab\KottiModelBundle\Repository\RepositoryInterface;
 use Truelab\KottiModelBundle\TypeInfo\TypeInfo;
 
 /**
@@ -11,7 +12,7 @@ use Truelab\KottiModelBundle\TypeInfo\TypeInfo;
  *   "fields" = {"type", "parent_id","path","position","_acl", "name","title", "annotations"},
  * })
  */
-class Node extends Base implements NodeInterface
+class Node extends Base implements NodeActiveInterface
 {
     protected $type;
 
@@ -32,6 +33,10 @@ class Node extends Base implements NodeInterface
     protected $children;
 
     protected $parent;
+
+    // FIXME
+    /** @var  RepositoryInterface  */
+    protected $repository;
 
     /**
      * @return mixed
@@ -169,7 +174,7 @@ class Node extends Base implements NodeInterface
     public function getChildren($class = null, array $criteria = array(), $orderBy = null, $limit = null, $offset = null)
     {
 
-        if($this->_repository) {
+        if($this->repository) {
 
             if(is_array($this->children)) {
 
@@ -183,11 +188,11 @@ class Node extends Base implements NodeInterface
             }
 
             $mergedCriteria = array_merge(
-                [(!$class ? 'WHERE '  :  ' ' ) .'nodes.parent_id = ? ' => $this->getId()],
+                ['nodes.parent_id = ? ' => $this->getId()],
                 $criteria
             );
 
-            $this->children = $this->_repository->findAll($class, $mergedCriteria, $orderBy, $limit, $offset);
+            $this->children = $this->repository->findAll($class, $mergedCriteria, $orderBy, $limit, $offset);
 
             return $this->children;
 
@@ -233,7 +238,16 @@ class Node extends Base implements NodeInterface
             return null;
         }
 
-        return $this->_repository->find(null, $this->parentId);
+        return $this->repository->find(null, $this->parentId);
     }
 
+    /**
+     * @param NodeInterface $node
+     *
+     * @return bool
+     */
+    public function equals(NodeInterface $node)
+    {
+        return get_class($this) === get_class($node) && $this->getPath() === $node->getPath();
+    }
 }

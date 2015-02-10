@@ -2,19 +2,13 @@
 
 namespace Truelab\KottiModelBundle\Repository;
 
-use Doctrine\DBAL\Connection;
-use Truelab\KottiModelBundle\Exception\NodeByPathNotFoundException;
-use Truelab\KottiModelBundle\Model\ModelFactory;
-use Truelab\KottiModelBundle\Model\Node;
 use Truelab\KottiModelBundle\Model\NodeInterface;
-use Truelab\KottiModelBundle\TypeInfo\TypeInfo;
-use Truelab\KottiModelBundle\TypeInfo\TypeInfoAnnotationReader;
 
 /**
- * Class Repository
- * @package Truelab\KottiModelBundle\Repository\Repository
+ * Class AliasRepository
+ * @package Truelab\KottiModelBundle\Repository\AliasRepository
  */
-class AliasRepository extends Repository
+class AliasRepository extends AbstractRepository
 {
 
     /**
