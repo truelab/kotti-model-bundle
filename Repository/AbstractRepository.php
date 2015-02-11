@@ -3,6 +3,7 @@
 namespace Truelab\KottiModelBundle\Repository;
 
 use Doctrine\DBAL\Connection;
+use Truelab\KottiModelBundle\Exception\ExpectedOneResultException;
 use Truelab\KottiModelBundle\Exception\NodeByPathNotFoundException;
 use Truelab\KottiModelBundle\Model\ContentInterface;
 use Truelab\KottiModelBundle\Model\ModelFactory;
@@ -72,7 +73,7 @@ abstract class AbstractRepository implements RepositoryInterface
 
 
         $sql = $qb->getSQL();
-        $sql .= ' ' . $nodeTypeInfo->getTable();
+        $sql .= $nodeTypeInfo->getTable();
 
 
         // ------ JOIN
@@ -120,6 +121,7 @@ abstract class AbstractRepository implements RepositoryInterface
             $whereSql = ' WHERE ' . (implode(' AND ', $preparedCriteria));
             $sql .= $whereSql;
         }
+
 
         $collection = $this->modelFactory->createModelCollectionFromRawData(
             $this->connection->executeQuery($sql, $params)->fetchAll()
@@ -189,7 +191,7 @@ abstract class AbstractRepository implements RepositoryInterface
 
         }else if(is_array($node) && count($node) !== 1){
 
-            throw new \Exception('Expected one result but got more.');
+            throw new ExpectedOneResultException();
 
         }else{
             // TODO check and throws unexpected type exception if class/type?

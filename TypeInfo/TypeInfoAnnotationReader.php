@@ -19,11 +19,15 @@ class TypeInfoAnnotationReader
 
     private $cache = [];
 
-    public function __construct($annotationClass, $nodeClass)
+    private $typesMap;
+
+    public function __construct($annotationClass, $nodeClass, $typesMap)
     {
         $this->annotationReader = new AnnotationReader();
+
         $this->annotationClass  = $annotationClass;
         $this->nodeClass = $nodeClass;
+        $this->typesMap  = $typesMap;
     }
 
     protected function inheritanceTypeInfos($class)
@@ -58,11 +62,11 @@ class TypeInfoAnnotationReader
 
     protected function allTypeInfos()
     {
-        $typeInfos = [];
-        foreach(ModelFactory::$map as $type => $class) {
-            $typeInfos[] = $this->typeInfo($class);
+        $info = [];
+        foreach($this->typesMap as $type => $class) {
+            $info[] = $this->typeInfo($class);
         }
-        return $typeInfos;
+        return $info;
     }
 
     /**
@@ -104,12 +108,12 @@ class TypeInfoAnnotationReader
             }
         }
 
-        $allTypeInfos = $this->allTypeInfos();
+        $allInfo = $this->allTypeInfos();
 
         /**
          * @var TypeInfo $typeInfo
          */
-        foreach($allTypeInfos as $typeInfo)
+        foreach($allInfo as $typeInfo)
         {
             if($typeInfo->getAlias() === $alias)
             {

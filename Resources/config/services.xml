@@ -9,12 +9,15 @@
 
         <service id="truelab_kotti_model.model_factory" class="Truelab\KottiModelBundle\Model\ModelFactory">
             <argument type="service" id="truelab_kotti_model.type_info.annotation_reader" />
+            <argument>%truelab_kotti_model.type_column%</argument>
+            <argument>%truelab_kotti_model.types%</argument>
         </service>
 
         <service id="truelab_kotti_model.type_info.annotation_reader"
                  class="Truelab\KottiModelBundle\TypeInfo\TypeInfoAnnotationReader">
             <argument>Truelab\KottiModelBundle\TypeInfo\TypeInfo</argument>
             <argument>Truelab\KottiModelBundle\Mode\Node</argument>
+            <argument>%truelab_kotti_model.types%</argument>
         </service>
 
         <service id="truelab_kotti_model.abstract_repository"

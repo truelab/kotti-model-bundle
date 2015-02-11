@@ -1,6 +1,7 @@
 <?php
 
 namespace Truelab\KottiModelBundle\Tests\TypeInfo;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Truelab\KottiModelBundle\Model\ModelFactory;
 use Truelab\KottiModelBundle\TypeInfo\TypeInfoAnnotationReader;
 
@@ -8,18 +9,25 @@ use Truelab\KottiModelBundle\TypeInfo\TypeInfoAnnotationReader;
  * Class TypeInfoAnnotationReaderTest
  * @package Truelab\KottiModelBundle\Tests\TypeInfo
  */
-class TypeInfoAnnotationReaderFunctionalTest extends \PHPUnit_Framework_TestCase
+class TypeInfoAnnotationReaderFunctionalTest extends WebTestCase
 {
     /**
      * @var TypeInfoAnnotationReader
      */
     protected $typeInfoAnnotationReader;
 
+    protected $client;
+
+    protected $typesMap;
+
     public function setUp()
     {
+        $this->client = self::createClient();
+        $this->typesMap = $this->client->getContainer()->getParameter('truelab_kotti_model.types');
         $this->typeInfoAnnotationReader = new TypeInfoAnnotationReader(
             'Truelab\KottiModelBundle\TypeInfo\TypeInfo',
-            'Truelab\KottiModelBundle\Model\Node'
+            'Truelab\KottiModelBundle\Model\Node',
+            $this->typesMap
         );
     }
 
@@ -27,7 +35,7 @@ class TypeInfoAnnotationReaderFunctionalTest extends \PHPUnit_Framework_TestCase
     {
         $all = $this->typeInfoAnnotationReader->inheritanceLineageTypeInfos(null);
 
-        $this->assertCount(count(ModelFactory::$map), $all);
+        $this->assertCount(count($this->typesMap), $all);
     }
 
     public function testGetClassByAlias()

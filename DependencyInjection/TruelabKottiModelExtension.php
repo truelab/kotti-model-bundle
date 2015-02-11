@@ -14,6 +14,13 @@ use Symfony\Component\DependencyInjection\Loader;
  */
 class TruelabKottiModelExtension extends Extension
 {
+    public static $types = array(
+        'content'  => 'Truelab\KottiModelBundle\Model\Content',
+        'document' => 'Truelab\KottiModelBundle\Model\Document',
+        'file' => 'Truelab\KottiModelBundle\Model\File',
+        'image' => 'Truelab\KottiModelBundle\Model\Image'
+    );
+
     /**
      * {@inheritdoc}
      */
@@ -21,6 +28,13 @@ class TruelabKottiModelExtension extends Extension
     {
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
+
+        $types = array_merge(static::$types, $config['types']);
+        $config['types'] = $types;
+
+        $container->setParameter('truelab_kotti_model.type_column', $config['type_column']);
+        $container->setParameter('truelab_kotti_model.types', $config['types']);
+        $container->setParameter('truelab_kotti_model.filter', $config['filter']);
 
         $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');

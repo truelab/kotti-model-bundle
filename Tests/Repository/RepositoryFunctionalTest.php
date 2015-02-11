@@ -4,13 +4,14 @@ namespace Truelab\KottiModelBundle\Tests\Repository;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Truelab\KottiModelBundle\Model\File;
-use Truelab\KottiModelBundle\Model\LanguageRoot;
 use Truelab\KottiModelBundle\Repository\Repository;
 use Truelab\KottiModelBundle\Model\Document;
+use Truelab\KottiMultilanguageBundle\Model\LanguageRoot;
 
 /**
  * Class Test
  * @package Truelab\KottiModelBundle\Tests\Repository
+ * @group repository
  */
 class RepositoryFunctionalTest extends WebTestCase
 {
@@ -75,10 +76,21 @@ class RepositoryFunctionalTest extends WebTestCase
          * @var Document $document
          */
         $document = $this->repository->findOne(null, [
-            ['WHERE nodes.path = ?' => $path]
+            'nodes.path = ?' => $path
         ]);
 
         $this->assertInstanceOf(LanguageRoot::getClass(), $document);
+    }
+
+    /**
+     * @expectedException \Truelab\KottiModelBundle\Exception\ExpectedOneResultException
+     * @throws \Truelab\KottiModelBundle\Exception\ExpectedOneResultException
+     */
+    public function testFindOneThrowsException()
+    {
+        $this->repository->findOne(null, [
+            'nodes.path LIKE ?' => '%en%'
+        ]);
     }
 
     public function testFindByPath()

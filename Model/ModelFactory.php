@@ -10,31 +10,41 @@ use Truelab\KottiModelBundle\TypeInfo\TypeInfoAnnotationReader;
  */
 class ModelFactory
 {
-    private $_typeInfoAnnotationReader;
+    private $annotationReader;
 
-    private $_discriminatorColumn;
+    private $typeColumn;
 
-    public static $map = [ // FIXME inject from configuration
-        'content'  => 'Truelab\KottiModelBundle\Model\Content',
-        'document' => 'Truelab\KottiModelBundle\Model\Document',
-        'file' => 'Truelab\KottiModelBundle\Model\File',
-        'image' => 'Truelab\KottiModelBundle\Model\Image',
-        'language_root' => 'Truelab\KottiModelBundle\Model\LanguageRoot', // KottiMultilanguageBundle
-        //'courses' => 'Truelab\KottiModelBundle\Model\Course', // MipBundle
-        'event' => 'Truelab\KottiModelBundle\Model\Event', // KottiCalendarBundle,
-        'calendar' => 'Truelab\KottiModelBundle\Model\Calendar',
-        'base_box_manager' => 'Truelab\KottiModelBundle\Model\BaseBoxManager',
-        'below_content_box_manager' => 'Truelab\KottiModelBundle\Model\BelowContentBoxManager',
-        'above_content_box_manager' => 'Truelab\KottiModelBundle\Model\AboveContentBoxManager',
-        'left_box_manager' => 'Truelab\KottiModelBundle\Model\LeftBoxManager',
-        'right_box_manager' => 'Truelab\KottiModelBundle\Model\RightBoxManager'
-    ];
+    private $typesMap;
 
-    public function __construct(TypeInfoAnnotationReader $typeInfoAnnotationReader,
-                                $discriminatorColumn = 'nodes_type')
+//    public static $map = [ // FIXME inject from configuration
+//
+//        // base
+//        'content'  => 'Truelab\KottiModelBundle\Model\Content',
+//        'document' => 'Truelab\KottiModelBundle\Model\Document',
+//        'file' => 'Truelab\KottiModelBundle\Model\File',
+//        'image' => 'Truelab\KottiModelBundle\Model\Image',
+//
+//        // kotti multilanguage
+//        'language_root' => 'Truelab\KottiModelBundle\Model\LanguageRoot', // KottiMultilanguageBundle
+//
+//        // mip
+//        'event' => 'Truelab\KottiModelBundle\Model\Event', // KottiCalendarBundle,
+//        'calendar' => 'Truelab\KottiModelBundle\Model\Calendar',
+//
+//        // mip
+//        //'courses' => 'Truelab\KottiModelBundle\Model\Course', // MipBundle
+//        'base_box_manager' => 'Truelab\KottiModelBundle\Model\BaseBoxManager',
+//        'below_content_box_manager' => 'Truelab\KottiModelBundle\Model\BelowContentBoxManager',
+//        'above_content_box_manager' => 'Truelab\KottiModelBundle\Model\AboveContentBoxManager',
+//        'left_box_manager' => 'Truelab\KottiModelBundle\Model\LeftBoxManager',
+//        'right_box_manager' => 'Truelab\KottiModelBundle\Model\RightBoxManager'
+//    ];
+
+    public function __construct(TypeInfoAnnotationReader $typeInfoAnnotationReader, $typeColumn, $typesMap)
     {
-        $this->_typeInfoAnnotationReader = $typeInfoAnnotationReader;
-        $this->_discriminatorColumn = $discriminatorColumn;
+        $this->annotationReader = $typeInfoAnnotationReader;
+        $this->typeColumn = $typeColumn;
+        $this->typesMap = $typesMap;
     }
 
     /**
@@ -44,22 +54,22 @@ class ModelFactory
      */
     public function createModelFromRawData(array $record)
     {
-        $type = $record[$this->_discriminatorColumn];
+        $type = $record[$this->typeColumn];
 
-        if(!isset(self::$map[$type])) {
+        if(!isset($this->typesMap[$type])) {
             // FIXME we must throw new \Exception(sprintf('Unknown type "%s"!', $type));
             return null;
         }
 
-        $class = self::$map[$type];
+        $class = $this->typesMap[$type];
 
-        $typeInfos = $this->_typeInfoAnnotationReader->inheritanceLineageTypeInfos($class);
+        $info = $this->annotationReader->inheritanceLineageTypeInfos($class);
 
         $object = new $class();
 
         foreach($record as $alias => $value)
         {
-            foreach($typeInfos as $typeInfo) {
+            foreach($info as $typeInfo) {
                 if($field = $typeInfo->getFieldByAlias($alias)) {
                     $object[$field->getProperty()] = $value;
                 }
