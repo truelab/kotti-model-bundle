@@ -6,6 +6,7 @@ use Truelab\KottiModelBundle\TypeInfo\TypeInfo;
 /**
  * Class TypeInfoTest
  * @package Truelab\KottiModelBundle\Tests\TypeInfo
+ * @group unit
  */
 class TypeInfoTest extends \PHPUnit_Framework_TestCase
 {

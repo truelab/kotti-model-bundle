@@ -11,7 +11,7 @@ use Truelab\KottiMultilanguageBundle\Model\LanguageRoot;
 /**
  * Class Test
  * @package Truelab\KottiModelBundle\Tests\Repository
- * @group repository
+ * @group functional
  */
 class RepositoryFunctionalTest extends WebTestCase
 {

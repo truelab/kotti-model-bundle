@@ -11,6 +11,7 @@ use Truelab\KottiModelBundle\Model\Document;
 /**
  * Class Test
  * @package Truelab\KottiModelBundle\Tests\Repository
+ * @group functional
  */
 class AliasRepositoryFunctionalTest extends WebTestCase
 {
