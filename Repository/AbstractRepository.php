@@ -31,14 +31,16 @@ abstract class AbstractRepository implements RepositoryInterface
      * @param Connection $connection
      * @param TypeInfoAnnotationReader $typeInfoAnnotationReader
      * @param ModelFactory $modelFactory
+     * @param array $filters
      */
     public function __construct(Connection $connection,
                                 TypeInfoAnnotationReader $typeInfoAnnotationReader,
-                                ModelFactory $modelFactory)
+                                ModelFactory $modelFactory, array $filters = [])
     {
         $this->connection = $connection;
         $this->typeAnnotationReader = $typeInfoAnnotationReader;
         $this->modelFactory = $modelFactory;
+        $this->filters = $filters;
     }
 
     /**
@@ -54,19 +56,23 @@ abstract class AbstractRepository implements RepositoryInterface
     {
 
         // can return all type infos if $class == null FIXME
-        $typeInfos = $this->typeAnnotationReader->inheritanceLineageTypeInfos($class);
+        $typeInfo = $this->typeAnnotationReader->inheritanceLineageTypeInfos($class);
         $nodeTypeInfo = $this->typeAnnotationReader->typeInfo(Node::getClass()); // FIXME
+
+        if(!$class) {
+            $typeInfo = $this->filter($typeInfo);
+        }
 
 
         $qb = $this->connection
             ->createQueryBuilder();
 
         if(!$class) {
-            array_unshift($typeInfos, $nodeTypeInfo);
+            array_unshift($typeInfo, $nodeTypeInfo);
         }
 
-        foreach($typeInfos as $typeInfo) {
-            foreach($typeInfo->getFields() as $field) {
+        foreach($typeInfo as $info) {
+            foreach($info->getFields() as $field) {
                 $qb->addSelect($field->getDottedName() . ' AS ' . $field->getAlias());
             }
         }
@@ -80,17 +86,17 @@ abstract class AbstractRepository implements RepositoryInterface
 
         // remove node before join sql parts
         if($class) {
-            $typeInfos = array_reverse($typeInfos, true);
-            array_shift($typeInfos);
+            $typeInfo = array_reverse($typeInfo, true);
+            array_shift($typeInfo);
         }else{
-            array_shift($typeInfos);
+            array_shift($typeInfo);
         }
 
         /**
-         * @var $typeInfo TypeInfo
+         * @var $info TypeInfo
          */
-        foreach($typeInfos as $typeInfo) {
-            $sql .= ( $class ? ' JOIN ' : ' LEFT JOIN ') . $typeInfo->getTable() . ' ON ' . $typeInfo->getAssociation();
+        foreach($typeInfo as $info) {
+            $sql .= ( $class ? ' JOIN ' : ' LEFT JOIN ') . $info->getTable() . ' ON ' . $info->getAssociation();
         }
 
 
@@ -172,6 +178,32 @@ abstract class AbstractRepository implements RepositoryInterface
 
             return key($value);
         }
+    }
+
+    /**
+     * @param TypeInfo[] $typeInfo
+     *
+     * @return TypeInfo[]
+     */
+    protected function filter(array $typeInfo)
+    {
+        $indexes = [];
+        foreach($typeInfo as $index => $info)
+        {
+            foreach($this->filters as $alias) {
+                if($info->getAlias() === $alias) {
+                    $indexes[] = $index;
+                }
+            }
+        }
+
+        foreach($indexes as $i) {
+            unset($typeInfo[$i]);
+        }
+
+        $typeInfo = array_values($typeInfo);
+
+        return $typeInfo;
     }
 
     /**
