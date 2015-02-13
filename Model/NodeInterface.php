@@ -9,6 +9,11 @@ namespace Truelab\KottiModelBundle\Model;
 interface NodeInterface extends BaseInterface
 {
     /**
+     * @return string
+     */
+    public function getType();
+
+    /**
      * @return boolean
      */
     public function hasChildren();

@@ -19,11 +19,6 @@ class Document extends Content implements DocumentInterface
 
     protected $mimeType;
 
-    public function getType()
-    {
-        return 'documents';
-    }
-
     public function setMimeType($mimeType)
     {
         $this->mimeType = $mimeType;
