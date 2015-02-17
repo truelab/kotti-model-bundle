@@ -24,12 +24,6 @@ class File extends Content
 
     protected $size;
 
-
-    public function getType()
-    {
-        return 'files';
-    }
-
     /**
      * @return mixed
      */

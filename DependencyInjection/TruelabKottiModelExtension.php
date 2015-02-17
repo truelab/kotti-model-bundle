@@ -32,6 +32,12 @@ class TruelabKottiModelExtension extends Extension
         $types = array_merge(static::$types, $config['types']);
         $config['types'] = $types;
 
+        foreach($config['types'] as $type => $class) {
+            if(!$class) {
+                unset($config['types'][$type]);
+            }
+        }
+
         $container->setParameter('truelab_kotti_model.type_column', $config['type_column']);
         $container->setParameter('truelab_kotti_model.types', $config['types']);
         $container->setParameter('truelab_kotti_model.filter', $config['filter']);
