@@ -198,7 +198,8 @@ class Node extends Base implements NodeActiveInterface
     public function getInNavigationChildren()
     {
         return $this->getChildren(null, [
-            'contents.in_navigation = ?' => true
+            'contents.in_navigation = ?' => true,
+            'contents.state = ?' => 'public'
         ]);
     }
 
@@ -249,7 +250,8 @@ class Node extends Base implements NodeActiveInterface
     public function getSiblings($class = null, array $criteria = [])
     {
         return $this->repository->findAll($class, array_merge([
-            'nodes.parent_id = ?' => $this->getParentId()
+            'nodes.parent_id = ?' => $this->getParentId(),
+            'contents.state = ?' => 'public'
         ], $criteria));
     }
 
