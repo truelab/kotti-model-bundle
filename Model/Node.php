@@ -176,17 +176,6 @@ class Node extends Base implements NodeActiveInterface
 
         if($this->repository) {
 
-            if(is_array($this->children)) {
-
-                if($class) {
-                    return array_filter($this->children, function ($child) use($class) {
-                        return get_class($child) === $class;
-                    });
-                }
-
-                return $this->children;
-            }
-
             $mergedCriteria = array_merge(
                 ['nodes.parent_id = ? ' => $this->getId()],
                 $criteria
@@ -249,5 +238,29 @@ class Node extends Base implements NodeActiveInterface
     public function equals(NodeInterface $node)
     {
         return get_class($this) === get_class($node) && $this->getPath() === $node->getPath();
+    }
+
+    /**
+     * @param null $class
+     * @param array $criteria
+     *
+     * @return NodeInterface[]
+     */
+    public function getSiblings($class = null, array $criteria = [])
+    {
+        return $this->repository->findAll($class, array_merge([
+            'nodes.parent_id = ?' => $this->getParentId()
+        ], $criteria));
+    }
+
+    /**
+     * @param null $class
+     * @param array $criteria
+     *
+     * @return bool
+     */
+    public function isLeaf($class = null, array $criteria = [])
+    {
+        return $this->hasChildren($class, $criteria) === false;
     }
 }

@@ -39,6 +39,16 @@ interface NodeInterface extends BaseInterface
     public function getPath();
 
     /**
+     * @return NodeInterface[]
+     */
+    public function getSiblings();
+
+    /**
+     * @return boolean
+     */
+    public function isLeaf();
+
+    /**
      * @param self $node
      *
      * @return boolean
