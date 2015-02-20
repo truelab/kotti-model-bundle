@@ -65,8 +65,23 @@ abstract class Base implements \JsonSerializable, \ArrayAccess
     public function jsonSerialize()
     {
         $serialized = [];
-        foreach($this as $key => $property) {
-            $serialized[$key] = $property;
+        foreach($this as $key => $value) {
+
+            if((is_array($value)
+                || is_string($value)
+                || is_bool($value)
+                || is_numeric($value))) {
+
+                if(is_string($value)) {
+                    if(mb_detect_encoding($value, 'UTF-8', true) == 'UTF-8') {
+                        $serialized[$key] = $value;
+                    }else{
+                        $serialized[$key] = base64_encode($value);
+                    }
+                }else{
+                    $serialized[$key] = $value;
+                }
+            }
         }
         return $serialized;
     }
@@ -130,6 +145,5 @@ abstract class Base implements \JsonSerializable, \ArrayAccess
     {
         return 'get' . ucfirst($property);
     }
-
 
 }
