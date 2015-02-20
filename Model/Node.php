@@ -199,7 +199,7 @@ class Node extends Base implements NodeActiveInterface
     {
         return $this->getChildren(null, [
             'contents.in_navigation = ?' => true,
-            'contents.state = ?' => 'public'
+            'contents.state = ?' => 'public' // FIXME
         ]);
     }
 
@@ -251,7 +251,7 @@ class Node extends Base implements NodeActiveInterface
     {
         return $this->repository->findAll($class, array_merge([
             'nodes.parent_id = ?' => $this->getParentId(),
-            'contents.state = ?' => 'public'
+            'contents.state = ?' => 'public' // FIXME
         ], $criteria));
     }
 
