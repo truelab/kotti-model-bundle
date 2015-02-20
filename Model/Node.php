@@ -198,8 +198,7 @@ class Node extends Base implements NodeActiveInterface
     public function getInNavigationChildren()
     {
         return $this->getChildren(null, [
-            'contents.in_navigation = ?' => true,
-            'contents.state = ?' => 'public' // FIXME
+            'contents.in_navigation = ?' => 1
         ]);
     }
 
