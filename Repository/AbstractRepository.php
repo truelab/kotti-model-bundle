@@ -128,6 +128,11 @@ abstract class AbstractRepository implements RepositoryInterface
             $sql .= $whereSql;
         }
 
+        // ORDER BY
+        if($orderBy && !empty($orderBy)) {
+            $sql .= ' ORDER BY '. (implode(',', $orderBy));
+        }
+
 
         $collection = $this->modelFactory->createModelCollectionFromRawData(
             $this->connection->executeQuery($sql, $params)->fetchAll()

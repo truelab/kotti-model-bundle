@@ -34,6 +34,7 @@ class ModelFactory
 
         if(!isset($this->typesMap[$type])) {
             // FIXME we must throw new \Exception(sprintf('Unknown type "%s"!', $type));
+            //throw new \Exception(sprintf('Unknown type "%s"!', $type));
             return null;
         }
 
