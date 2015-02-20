@@ -104,6 +104,11 @@ abstract class AbstractRepository implements RepositoryInterface
         $params = [];
         $preparedCriteria = [];
 
+        // ------- ONLY PUBLIC STATE FIXME
+        $preparedCriteria[] = 'contents.state = ?';
+        $params[] = 'public';
+
+        // -------- restrict by type if class is set
         if($class) {
             $preparedCriteria[] = 'nodes.type = ?';
             // node.type param
