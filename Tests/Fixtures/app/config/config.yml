@@ -1,0 +1,23 @@
+imports:
+    - { resource: parameters.yml }
+
+framework:
+    secret:          Oh! Oh! Oh!
+    router:          { resource: "%kernel.root_dir%/config/routing.yml" }
+    form:            true
+    csrf_protection: true
+    session:         ~
+    default_locale:  en
+    translator:      { fallback: en }
+    profiler:        { only_exceptions: false }
+
+doctrine:
+    dbal:
+        driver:   "%database_driver%"
+        path:     "%database_path%"
+        charset:  UTF8
+
+truelab_kotti_model: ~
+
+
+

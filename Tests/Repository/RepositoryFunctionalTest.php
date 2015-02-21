@@ -51,7 +51,7 @@ class RepositoryFunctionalTest extends WebTestCase
 
     public function testFindOneWithType()
     {
-        $path = '/en/mip/';
+        $path = '/about/';
 
         /**
          * @var Document $document
@@ -68,20 +68,6 @@ class RepositoryFunctionalTest extends WebTestCase
         $this->assertArrayHasKey('path', json_decode(json_encode($document), true));
     }
 
-    public function testFindOneByCriteria()
-    {
-        $path = '/en/';
-
-        /**
-         * @var Document $document
-         */
-        $document = $this->repository->findOne(null, [
-            'nodes.path = ?' => $path
-        ]);
-
-        $this->assertInstanceOf(LanguageRoot::getClass(), $document);
-    }
-
     /**
      * @expectedException \Truelab\KottiModelBundle\Exception\ExpectedOneResultException
      * @throws \Truelab\KottiModelBundle\Exception\ExpectedOneResultException
@@ -89,13 +75,13 @@ class RepositoryFunctionalTest extends WebTestCase
     public function testFindOneThrowsException()
     {
         $this->repository->findOne(null, [
-            'nodes.path LIKE ?' => '%en%'
+            'nodes.path LIKE ?' => '%about%'
         ]);
     }
 
     public function testFindByPath()
     {
-        $path = '/en/mip/';
+        $path = '/about/foo/';
 
         /**
          * @var Document $document
@@ -108,7 +94,7 @@ class RepositoryFunctionalTest extends WebTestCase
 
     public function testGetChildren()
     {
-        $path = '/en/';
+        $path = '/about/';
 
         /**
          * @var Document $document
@@ -126,29 +112,29 @@ class RepositoryFunctionalTest extends WebTestCase
 
     public function testGetParent()
     {
-        $parentPath = '/en/';
-        $childPath  = '/en/mip/';
+        $parentPath = '/about/';
+        $childPath  = '/about/foo/';
         $document = $this->repository->findByPath($childPath);
         $this->assertEquals($parentPath, $document->getParent()->getPath());
     }
 
     public function testGetParent2()
     {
-        $childPath  = '/en/mip/';
+        $childPath  = '/about/foo/';
         $document = $this->repository->findByPath($childPath);
         $this->assertEquals('/', $document->getParent()->getParent()->getPath());
     }
 
     public function testGetParent3()
     {
-        $childPath  = '/en/mip/';
+        $childPath  = '/about/foo/';
         $document = $this->repository->findByPath($childPath);
         $this->assertEquals(null, $document->getParent()->getParent()->getParent());
     }
 
     public function hasParent()
     {
-        $childPath = '/en/mip/';
+        $childPath = '/about/foo/';
         $document = $this->repository->findByPath($childPath);
         $this->assertTrue($document->hasParent());
 

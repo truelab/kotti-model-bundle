@@ -8,7 +8,7 @@ use Truelab\KottiModelBundle\TypeInfo\TypeInfoAnnotationReader;
 /**
  * Class TypeInfoAnnotationReaderTest
  * @package Truelab\KottiModelBundle\Tests\TypeInfo
- * @group functional
+ * @group integration
  */
 class TypeInfoAnnotationReaderFunctionalTest extends WebTestCase
 {

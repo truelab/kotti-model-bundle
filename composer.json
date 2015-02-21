@@ -1,0 +1,23 @@
+{
+    "name": "truelab/kotti-model-bundle",
+    "authors": [
+        {
+            "name": "Ruben Barilani",
+            "email": "ruben.barilani.dev@gmail.com"
+        }
+    ],
+    "autoload" : {
+        "psr-4": {"Truelab\\KottiModelBundle\\" : "./"}
+    },
+    "require": {
+        "php": ">=5.4.0",
+        "doctrine/doctrine-bundle": "~1.3"
+    },
+    "require-dev": {
+        "symfony/symfony": "2.6.*",
+        "phpunit/phpunit": "4.4"
+    },
+    "scripts" : {
+        "test" : "vendor/bin/phpunit"
+    }
+}
