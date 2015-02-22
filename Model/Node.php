@@ -110,7 +110,7 @@ class Node extends Base implements NodeActiveInterface
         if(is_array($this->acl)) {
             return $this->acl;
         }else{
-            $this->acl = json_decode($this->acl);
+            $this->acl = json_decode($this->acl, true);
         }
         return $this->acl;
     }
@@ -160,6 +160,11 @@ class Node extends Base implements NodeActiveInterface
      */
     public function getAnnotations()
     {
+        if(is_array($this->annotations)) {
+            return $this->annotations;
+        }else{
+            $this->annotations = json_decode($this->annotations, true);
+        }
         return $this->annotations;
     }
 
@@ -182,7 +187,6 @@ class Node extends Base implements NodeActiveInterface
             );
 
             $this->children = $this->repository->findAll($class, $mergedCriteria, $orderBy, $limit, $offset);
-
             return $this->children;
 
         }else{
@@ -223,11 +227,16 @@ class Node extends Base implements NodeActiveInterface
 
     public function getParent()
     {
-        if(!$this->parentId) {
+        if(!$this->parentId || !$this->repository) {
             return null;
         }
 
-        return $this->repository->find(null, $this->parentId);
+        if($this->parent) {
+            return $this->parent;
+        }
+
+        $this->parent = $this->repository->find(null, $this->parentId);
+        return $this->parent;
     }
 
     /**
@@ -249,8 +258,7 @@ class Node extends Base implements NodeActiveInterface
     public function getSiblings($class = null, array $criteria = [])
     {
         return $this->repository->findAll($class, array_merge([
-            'nodes.parent_id = ?' => $this->getParentId(),
-            'contents.state = ?' => 'public' // FIXME
+            'nodes.parent_id = ?' => $this->getParentId()
         ], $criteria));
     }
 
