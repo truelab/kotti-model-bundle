@@ -94,6 +94,8 @@ class TypeInfoAnnotationReader
 
     public function getClassByAlias($alias)
     {
+
+
         if(!$alias) {
             return null;
         }
@@ -108,6 +110,7 @@ class TypeInfoAnnotationReader
             }
         }
 
+
         $allInfo = $this->allTypeInfos();
 
         /**
@@ -120,5 +123,7 @@ class TypeInfoAnnotationReader
                 return $typeInfo->getClass();
             }
         }
+
+        throw new \Exception(sprintf('Class for requested alias (%s) was not found!! Maybe is not registered under truelab_kotti_model.types map?', $alias));
     }
 }

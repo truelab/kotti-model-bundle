@@ -24,11 +24,14 @@ class AliasRepository extends AbstractRepository
      */
     public function findAll($alias = null, array $criteria = null, array $orderBy = null, $limit = null, $offset = null)
     {
+
         if(class_exists($alias)) {
             // alias is a existing class name
             return parent::findAll($alias, $criteria, $orderBy, $limit, $offset);
         }
+
         $class = $this->typeAnnotationReader->getClassByAlias($alias);
+
         return parent::findAll($class, $criteria, $orderBy, $limit, $offset);
     }
 
