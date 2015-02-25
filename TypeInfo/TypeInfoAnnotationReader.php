@@ -24,7 +24,6 @@ class TypeInfoAnnotationReader
     public function __construct($annotationClass, $nodeClass, $typesMap)
     {
         $this->annotationReader = new AnnotationReader();
-
         $this->annotationClass  = $annotationClass;
         $this->nodeClass = $nodeClass;
         $this->typesMap  = $typesMap;

@@ -3,6 +3,7 @@
 namespace Truelab\KottiModelBundle\Model;
 
 use Truelab\KottiModelBundle\TypeInfo\TypeInfoAnnotationReader;
+use Truelab\KottiModelBundle\Util\PostLoaderInterface;
 
 /**
  * Class ModelFactory
@@ -10,17 +11,47 @@ use Truelab\KottiModelBundle\TypeInfo\TypeInfoAnnotationReader;
  */
 class ModelFactory
 {
+    /**
+     * @var TypeInfoAnnotationReader
+     */
     private $annotationReader;
 
+    /**
+     * @var string
+     */
     private $typeColumn;
 
+    /**
+     * @var array
+     */
     private $typesMap;
+
+    /**
+     * @var PostLoaderInterface[]
+     */
+    private $postLoaders = [];
 
     public function __construct(TypeInfoAnnotationReader $typeInfoAnnotationReader, $typeColumn, $typesMap)
     {
         $this->annotationReader = $typeInfoAnnotationReader;
         $this->typeColumn = $typeColumn;
         $this->typesMap = $typesMap;
+    }
+
+    /**
+     * @param PostLoaderInterface $postLoader
+     */
+    public function addPostLoader(PostLoaderInterface $postLoader)
+    {
+        $this->postLoaders[] = $postLoader;
+    }
+
+    /**
+     * @return \Truelab\KottiModelBundle\Util\PostLoaderInterface[]
+     */
+    public function getPostLoaders()
+    {
+        return $this->postLoaders;
     }
 
     /**
@@ -33,7 +64,7 @@ class ModelFactory
         $type = $record[$this->typeColumn];
 
         if(!isset($this->typesMap[$type])) {
-            // FIXME we must throw new \Exception(sprintf('Unknown type "%s"!', $type));
+            // FIXME maybe we must throw an exception if type was not found? new \Exception(sprintf('Unknown type "%s"!', $type));
             //throw new \Exception(sprintf('Unknown type "%s"!', $type));
             return null;
         }
@@ -42,8 +73,10 @@ class ModelFactory
 
         $info = $this->annotationReader->inheritanceLineageTypeInfos($class);
 
+        // instantiate object
         $object = new $class();
 
+        // populate object
         foreach($record as $alias => $value)
         {
             foreach($info as $typeInfo) {
@@ -52,6 +85,15 @@ class ModelFactory
                 }
             }
         }
+
+        // runs post loaders
+        foreach($this->postLoaders as $postLoader)
+        {
+            if($postLoader->support($object)) {
+                $postLoader->onPostLoad($object);
+            }
+        }
+
         return $object;
     }
 
