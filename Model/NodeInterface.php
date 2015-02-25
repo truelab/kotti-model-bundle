@@ -14,6 +14,11 @@ interface NodeInterface extends BaseInterface
     public function getType();
 
     /**
+     * @return array
+     */
+    public function getAnnotations();
+
+    /**
      * @return boolean
      */
     public function hasChildren();
