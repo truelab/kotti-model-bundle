@@ -253,13 +253,17 @@ class Node extends Base implements NodeActiveInterface
      * @param null $class
      * @param array $criteria
      *
+     * @param null $orderBy
+     * @param null $limit
+     * @param null $offset
+     *
      * @return NodeInterface[]
      */
-    public function getSiblings($class = null, array $criteria = [])
+    public function getSiblings($class = null, array $criteria = [], $orderBy = null, $limit = null, $offset = null)
     {
         return $this->repository->findAll($class, array_merge([
             'nodes.parent_id = ?' => $this->getParentId()
-        ], $criteria));
+        ], $criteria), $orderBy, $limit, $offset);
     }
 
     /**
