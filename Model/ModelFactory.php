@@ -3,6 +3,7 @@
 namespace Truelab\KottiModelBundle\Model;
 
 use Truelab\KottiModelBundle\TypeInfo\TypeInfoAnnotationReader;
+use Truelab\KottiModelBundle\TypeInfo\TypeInfoField;
 use Truelab\KottiModelBundle\Util\PostLoaderInterface;
 
 /**
@@ -111,6 +112,20 @@ class ModelFactory
             }
         }
         return $collection;
+    }
+
+    public function getProperty(TypeInfoField $field, array $rows)
+    {
+
+        if(count($rows) > 0) {
+            $row = $rows[0];
+
+            if( isset($row[$field->getAlias()]) ) {
+                return $row[$field->getAlias()];
+            }
+        }
+
+        return null;
     }
 
 }

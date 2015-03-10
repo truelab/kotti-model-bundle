@@ -2,13 +2,22 @@
 
 namespace Truelab\KottiModelBundle\Model;
 
+use Closure;
 use Truelab\KottiModelBundle\TypeInfo\TypeInfo;
 
 /**
  * @TypeInfo({
  *   "table" = "files",
  *   "type"  = "file",
- *   "fields" = { "data", "filename", "mimetype", "size" },
+ *   "fields" = {
+ *      "data" : {
+ *         "name" : "data",
+ *         "lazy" : true
+ *      },
+ *      "filename",
+ *      "mimetype",
+ *      "size"
+ *   },
  *   "associated_table" = "contents",
  *   "association" = "files.id = contents.id"
  * })
@@ -17,6 +26,8 @@ class File extends Content
 {
 
     protected $data;
+
+    protected $dataReference;
 
     protected $filename;
 
@@ -29,6 +40,12 @@ class File extends Content
      */
     public function getData()
     {
+
+        if(empty($this->data) && is_callable($this->dataReference)) {
+            $reference = $this->dataReference;
+            $this->setData($reference());
+        }
+
         return $this->data;
     }
 
@@ -38,6 +55,11 @@ class File extends Content
     public function setData($data)
     {
         $this->data = $data;
+    }
+
+    public function setDataReference(Closure $dataReference)
+    {
+        $this->dataReference = $dataReference;
     }
 
     /**

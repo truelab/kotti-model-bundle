@@ -11,6 +11,7 @@ use Truelab\KottiModelBundle\Model\Node;
 use Truelab\KottiModelBundle\Model\NodeInterface;
 use Truelab\KottiModelBundle\TypeInfo\TypeInfo;
 use Truelab\KottiModelBundle\TypeInfo\TypeInfoAnnotationReader;
+use Truelab\KottiModelBundle\TypeInfo\TypeInfoField;
 
 /**
  * Class AbstractRepository
@@ -52,17 +53,63 @@ abstract class AbstractRepository implements RepositoryInterface
      *
      * @return NodeInterface[]
      */
-    public function findAll($class = null, array $criteria = null, array $orderBy = null, $limit = null, $offset = null)
+    public function findAll($class = null, array $criteria = null, array $orderBy = null, $limit = null, $offset = null, array $fields = [])
     {
 
+        $data   = $this->getFindAllSql($class, $criteria, $orderBy, $limit, $offset, $fields);
+        $sql    = $data['sql'];
+        $params = $data['params'];
+        $lazyFields = $data['lazy_fields'];
+
+        $collection = $this->modelFactory->createModelCollectionFromRawData(
+            $this->connection->executeQuery($sql, $params)->fetchAll()
+        );
+
+        // FIXME
+        foreach($collection as $node) {
+            $node->setRepository($this);
+
+            if(count($lazyFields) > 0) {
+
+                /**
+                 * @var TypeInfoField $lazyField
+                 */
+                foreach($lazyFields as $lazyField) {
+
+                    $modelFactory = $this->modelFactory;
+                    $connection = $this->connection;
+                    $data = $this->getFindSql(get_class($node), $node['id'], [$lazyField->getName()]);
+                    $sql  = $data['sql'];
+                    $params = $data['params'];
+
+                    $reference = function () use ($modelFactory, $connection, $sql, $params, $lazyField) {
+                        return $modelFactory->getProperty($lazyField, $connection->executeQuery($sql, $params)->fetchAll());
+                    };
+
+                    $setReferenceMethodName = 'set'. ucfirst($lazyField->getProperty()) . 'Reference';
+
+                    if(method_exists($node, $setReferenceMethodName))
+                    {
+                        $node->{$setReferenceMethodName}($reference);
+                    }
+                }
+            }
+        }
+
+        return $collection;
+    }
+
+    protected function getFindAllSql($class = null, array $criteria = null, array $orderBy = null, $limit = null, $offset = null, array $fields = [])
+    {
         // can return all type infos if $class == null FIXME
         $typeInfo = $this->typeAnnotationReader->inheritanceLineageTypeInfos($class);
         $nodeTypeInfo = $this->typeAnnotationReader->typeInfo(Node::getClass()); // FIXME
+        $lazyFields = [];
+
 
         if(!$class) {
             $typeInfo = $this->filter($typeInfo);
         }
-
 
         $qb = $this->connection
             ->createQueryBuilder();
@@ -73,7 +120,11 @@ abstract class AbstractRepository implements RepositoryInterface
 
         foreach($typeInfo as $info) {
             foreach($info->getFields() as $field) {
-                $qb->addSelect($field->getDottedName() . ' AS ' . $field->getAlias());
+                if(!$field->isLazy() || in_array($field->getName(), $fields)) {
+                    $qb->addSelect($field->getDottedName() . ' AS ' . $field->getAlias());
+                }else{
+                    $lazyFields[] = $field;
+                }
             }
         }
 
@@ -138,17 +189,18 @@ abstract class AbstractRepository implements RepositoryInterface
             $sql .= ' ORDER BY '. (implode(',', $orderBy));
         }
 
+        return [
+            'sql' => $sql,
+            'params' => $params,
+            'lazy_fields' => $lazyFields
+        ];
+    }
 
-        $collection = $this->modelFactory->createModelCollectionFromRawData(
-            $this->connection->executeQuery($sql, $params)->fetchAll()
-        );
-
-        // FIXME
-        foreach($collection as $node) {
-            $node->setRepository($this);
-        }
-
-        return $collection;
+    protected function getFindSql($class = null, $identifier, array $fields = [])
+    {
+        return $this->getFindAllSql($class,[
+            'nodes.id = ?' => $identifier
+        ], [], null, null, $fields);
     }
 
     protected function prepareCriteria($key, $value, &$params)
@@ -220,12 +272,14 @@ abstract class AbstractRepository implements RepositoryInterface
      * @param string $class
      * @param array $criteria
      *
-     * @return null|NodeInterface|ContentInterface
-     * @throws \Exception
+     * @param array $fields
+     *
+     * @return null|ContentInterface|NodeInterface
+     * @throws ExpectedOneResultException
      */
-    public function findOne($class = null, array $criteria = [])
+    public function findOne($class = null, array $criteria = [], array $fields = [])
     {
-        $node = $this->findAll($class, $criteria);
+        $node = $this->findAll($class, $criteria, $fields);
 
         if(empty($node)) {
 
@@ -242,15 +296,19 @@ abstract class AbstractRepository implements RepositoryInterface
     }
 
     /**
+     * @param string $class
      * @param string $identifier
      *
+     * @param array $fields
+     *
      * @return NodeInterface
+     * @throws ExpectedOneResultException
      */
-    public function find($class, $identifier)
+    public function find($class, $identifier, array $fields = [])
     {
         return $this->findOne($class, [
             'nodes.id = ' . $identifier
-        ]);
+        ], $fields);
     }
 
     public function findByPath($path)

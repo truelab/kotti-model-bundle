@@ -12,12 +12,22 @@ class TypeInfoField
     private $name;
     private $alias;
     private $dottedName;
+    private $lazy = false;
 
     public function __construct($table, $field)
     {
-        $this->name  = $field;
+        if(is_array($field) && !isset($field['name']))
+        {
+            throw new \Exception('If you want specify options for this field, you must set a "name" property');
+        }
+
+        $this->name  = is_array($field) ? $field['name'] : $field;
         $this->alias = $table . '_' . $this->name;
         $this->dottedName = $table . '.' . $this->name;
+
+        if(is_array($field) && isset($field['lazy']) && $field['lazy'] == true) {
+            $this->lazy = true;
+        }
     }
 
     public function getAlias()
@@ -38,5 +48,10 @@ class TypeInfoField
     public function getProperty()
     {
         return Inflector::camelize($this->getName());
+    }
+
+    public function isLazy()
+    {
+        return $this->lazy;
     }
 }
