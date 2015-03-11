@@ -51,7 +51,7 @@ class RepositoryFunctionalTest extends WebTestCase {
 
         $this->assertGreaterThan(1, count($nodes));
 
-        // nodes can have creation_date in the future (year 2094, i'm already die!)
+        // nodes can't have future creation_date (year 2094, i'm already die!)
         $nodes = $this->repository->findAll(Document::getClass(), [
             'contents.creation_date >= ?' => new \DateTime('2094-03-21'),
         ]);
