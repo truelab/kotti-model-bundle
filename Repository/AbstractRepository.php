@@ -61,9 +61,27 @@ abstract class AbstractRepository implements RepositoryInterface
         $params = $data['params'];
         $lazyFields = $data['lazy_fields'];
 
+        // PREPARE STATEMENT
+        $statement = $this->connection->prepare($sql);
+        foreach($params as $index => $param)
+        {
+            $type = null;
+
+            if($param instanceof \DateTime) {
+                $type = 'datetime';
+            }
+
+            $statement->bindValue($index + 1, $param, $type);
+        }
+        $statement->execute();
+
         $collection = $this->modelFactory->createModelCollectionFromRawData(
-            $this->connection->executeQuery($sql, $params)->fetchAll()
+            $statement->fetchAll()
         );
+
+//        $collection = $this->modelFactory->createModelCollectionFromRawData(
+//            $this->connection->executeQuery($sql, $params)->fetchAll()
+//        );
 
         // FIXME
         foreach($collection as $node) {
