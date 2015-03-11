@@ -19,6 +19,8 @@ use Truelab\KottiModelBundle\TypeInfo\TypeInfoField;
  */
 abstract class AbstractRepository implements RepositoryInterface
 {
+    const SQLITE_PLATFORM_NAME  = 'sqlite';
+
     /**
      * @var Connection
      */
@@ -63,6 +65,7 @@ abstract class AbstractRepository implements RepositoryInterface
 
         // PREPARE STATEMENT
         $statement = $this->connection->prepare($sql);
+
         foreach($params as $index => $param)
         {
             $type = null;
@@ -119,10 +122,14 @@ abstract class AbstractRepository implements RepositoryInterface
 
     protected function getFindAllSql($class = null, array $criteria = null, array $orderBy = null, $limit = null, $offset = null, array $fields = [])
     {
+
+        $platformName  = $this->connection->getDatabasePlatform()->getName();
+
         // can return all type infos if $class == null FIXME
         $typeInfo = $this->typeAnnotationReader->inheritanceLineageTypeInfos($class);
         $nodeTypeInfo = $this->typeAnnotationReader->typeInfo(Node::getClass()); // FIXME
         $lazyFields = [];
+
 
 
         if(!$class) {
@@ -206,6 +213,22 @@ abstract class AbstractRepository implements RepositoryInterface
         if($orderBy && !empty($orderBy)) {
             $sql .= ' ORDER BY '. (implode(',', $orderBy));
         }
+
+        // LIMIT
+        if(is_numeric($limit)) {
+            if(!$offset) {
+                $offset = 0;
+            }
+            $params[] = (int) $limit;
+            $params[] = $offset;
+
+            if($platformName === self::SQLITE_PLATFORM_NAME) {
+                $sql .= ' LIMIT ? OFFSET ?';
+            }else{
+                $sql .= ' LIMIT ?,?';
+            }
+        }
+
 
         return [
             'sql' => $sql,

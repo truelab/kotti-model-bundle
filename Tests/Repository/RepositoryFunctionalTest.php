@@ -59,6 +59,12 @@ class RepositoryFunctionalTest extends WebTestCase {
         $this->assertCount(0, $nodes);
     }
 
+    public function testFindAllWithLimit()
+    {
+        $nodes = $this->repository->findAll(null, [], [], 3);
+        $this->assertCount(3, $nodes);
+    }
+
 	public function testFindOneWithType() {
 		$path = '/about/';
 
