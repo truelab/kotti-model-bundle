@@ -71,7 +71,12 @@ abstract class AbstractRepository implements RepositoryInterface
             $type = null;
 
             if($param instanceof \DateTime) {
+
                 $type = 'datetime';
+
+            }elseif(is_int($param)) {
+
+                $type = \PDO::PARAM_INT;
             }
 
             $statement->bindValue($index + 1, $param, $type);
@@ -82,9 +87,6 @@ abstract class AbstractRepository implements RepositoryInterface
             $statement->fetchAll()
         );
 
-//        $collection = $this->modelFactory->createModelCollectionFromRawData(
-//            $this->connection->executeQuery($sql, $params)->fetchAll()
-//        );
 
         // FIXME
         foreach($collection as $node) {
@@ -216,16 +218,22 @@ abstract class AbstractRepository implements RepositoryInterface
 
         // LIMIT
         if(is_numeric($limit)) {
-            if(!$offset) {
+            if($offset == null || !is_numeric($offset)) {
                 $offset = 0;
             }
-            $params[] = (int) $limit;
-            $params[] = $offset;
+
 
             if($platformName === self::SQLITE_PLATFORM_NAME) {
+
+                $params[] = (int) $limit;
+                $params[] = (int) $offset;
                 $sql .= ' LIMIT ? OFFSET ?';
+
             }else{
-                $sql .= ' LIMIT ?,?';
+
+                $params[] = (int) $offset;
+                $params[] = (int) $limit;
+                $sql .= ' LIMIT  ?, ?';
             }
         }
 
