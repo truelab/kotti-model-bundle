@@ -209,7 +209,7 @@ class Node extends Base implements NodeActiveInterface
     public function hasChildren($class = null, array $criteria = array())
     {
         if(!$this->children) {
-            return count($this->getChildren()) > 0;
+            return count($this->getChildren($class, $criteria)) > 0;
         }else{
             return count($this->children) > 0;
         }
