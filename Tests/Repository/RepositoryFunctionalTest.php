@@ -141,7 +141,7 @@ class RepositoryFunctionalTest extends WebTestCase {
 		$this->assertEquals(null, $document->getParent()->getParent()->getParent());
 	}
 
-	public function hasParent() {
+	public function testHasParent() {
 		$childPath = '/about/foo/';
 		$document = $this->repository->findByPath($childPath);
 		$this->assertTrue($document->hasParent());
@@ -150,5 +150,11 @@ class RepositoryFunctionalTest extends WebTestCase {
 		$this->assertFalse($root->hasParent());
 	}
 
+    public function testCountAll()
+    {
+        $count = $this->repository->countAll(Document::getClass());
+        $this->assertNotNull($count);
+        $this->assertTrue(is_int($count), 'I expect count result is a int number');
+    }
 
 }

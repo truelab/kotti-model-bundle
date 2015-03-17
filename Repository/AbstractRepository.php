@@ -55,10 +55,10 @@ abstract class AbstractRepository implements RepositoryInterface
      *
      * @return NodeInterface[]
      */
-    public function findAll($class = null, array $criteria = null, array $orderBy = null, $limit = null, $offset = null, array $fields = [])
+    public function findAll($class = null, array $criteria = null, array $orderBy = null, $limit = null, $offset = null, array $fields = [], $count = false)
     {
 
-        $data   = $this->getFindAllSql($class, $criteria, $orderBy, $limit, $offset, $fields);
+        $data   = $this->getFindAllSql($class, $criteria, $orderBy, $limit, $offset, $fields, $count);
         $sql    = $data['sql'];
         $params = $data['params'];
         $lazyFields = $data['lazy_fields'];
@@ -82,6 +82,17 @@ abstract class AbstractRepository implements RepositoryInterface
             $statement->bindValue($index + 1, $param, $type);
         }
         $statement->execute();
+
+
+        // COUNT
+        if($count) {
+            $result = $statement->fetchAll();
+            if(count($result) > 0) {
+                return (int)$result[0]['total'];
+            }else{
+                return 0;
+            }
+        }
 
         $collection = $this->modelFactory->createModelCollectionFromRawData(
             $statement->fetchAll()
@@ -122,7 +133,14 @@ abstract class AbstractRepository implements RepositoryInterface
         return $collection;
     }
 
-    protected function getFindAllSql($class = null, array $criteria = null, array $orderBy = null, $limit = null, $offset = null, array $fields = [])
+    protected function getFindAllSql(
+        $class = null,
+        array $criteria = null,
+        array $orderBy = null,
+        $limit = null,
+        $offset = null,
+        array $fields = [],
+        $count = false)
     {
 
         $platformName  = $this->connection->getDatabasePlatform()->getName();
@@ -131,7 +149,6 @@ abstract class AbstractRepository implements RepositoryInterface
         $typeInfo = $this->typeAnnotationReader->inheritanceLineageTypeInfos($class);
         $nodeTypeInfo = $this->typeAnnotationReader->typeInfo(Node::getClass()); // FIXME
         $lazyFields = [];
-
 
 
         if(!$class) {
@@ -145,12 +162,16 @@ abstract class AbstractRepository implements RepositoryInterface
             array_unshift($typeInfo, $nodeTypeInfo);
         }
 
-        foreach($typeInfo as $info) {
-            foreach($info->getFields() as $field) {
-                if(!$field->isLazy() || in_array($field->getName(), $fields)) {
-                    $qb->addSelect($field->getDottedName() . ' AS ' . $field->getAlias());
-                }else{
-                    $lazyFields[] = $field;
+        if($count === true) {
+            $qb->addSelect('COUNT(*) AS total');
+        }else{
+            foreach($typeInfo as $info) {
+                foreach($info->getFields() as $field) {
+                    if(!$field->isLazy() || in_array($field->getName(), $fields)) {
+                        $qb->addSelect($field->getDottedName() . ' AS ' . $field->getAlias());
+                    }else{
+                        $lazyFields[] = $field;
+                    }
                 }
             }
         }
@@ -375,5 +396,10 @@ abstract class AbstractRepository implements RepositoryInterface
         }
 
         return $node;
+    }
+
+    public function countAll($class = null, array $criteria = null, array $orderBy = null, $limit = null, $offset = null)
+    {
+       return $this->findAll($class, $criteria, $orderBy, $limit, $offset, [], true);
     }
 }

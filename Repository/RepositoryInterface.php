@@ -41,4 +41,6 @@ interface RepositoryInterface
      * @return NodeInterface
      */
     public function findByPath($path);
+
+    public function countAll($class = null, array $criteria = null, array $orderBy = null, $limit = null, $offset = null);
 }
