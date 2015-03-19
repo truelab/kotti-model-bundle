@@ -244,8 +244,12 @@ class Node extends Base implements NodeActiveInterface
      *
      * @return bool
      */
-    public function equals(NodeInterface $node)
+    public function equals(NodeInterface $node = null)
     {
+        if(!$node) {
+            return false;
+        }
+
         return get_class($this) === get_class($node) && $this->getPath() === $node->getPath();
     }
 
