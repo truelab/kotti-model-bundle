@@ -26,8 +26,14 @@ abstract class AbstractRepository implements RepositoryInterface
      */
     protected $connection;
 
+    /**
+     * @var TypeInfoAnnotationReader
+     */
     protected $typeAnnotationReader;
 
+    /**
+     * @var ModelFactory
+     */
     protected $modelFactory;
 
     /**
@@ -133,6 +139,17 @@ abstract class AbstractRepository implements RepositoryInterface
         return $collection;
     }
 
+    /**
+     * @param null $class
+     * @param array $criteria
+     * @param array $orderBy
+     * @param null $limit
+     * @param null $offset
+     * @param array $fields
+     * @param bool $count
+     *
+     * @return array
+     */
     protected function getFindAllSql(
         $class = null,
         array $criteria = null,
@@ -266,6 +283,13 @@ abstract class AbstractRepository implements RepositoryInterface
         ];
     }
 
+    /**
+     * @param null $class
+     * @param $identifier
+     * @param array $fields
+     *
+     * @return array
+     */
     protected function getFindSql($class = null, $identifier, array $fields = [])
     {
         return $this->getFindAllSql($class,[
@@ -381,6 +405,12 @@ abstract class AbstractRepository implements RepositoryInterface
         ], $fields);
     }
 
+    /**
+     * @param string $path
+     *
+     * @return null|ContentInterface|NodeInterface
+     * @throws NodeByPathNotFoundException
+     */
     public function findByPath($path)
     {
         try{
@@ -398,8 +428,25 @@ abstract class AbstractRepository implements RepositoryInterface
         return $node;
     }
 
+    /**
+     * @param null $class
+     * @param array $criteria
+     * @param array $orderBy
+     * @param null $limit
+     * @param null $offset
+     *
+     * @return int
+     */
     public function countAll($class = null, array $criteria = null, array $orderBy = null, $limit = null, $offset = null)
     {
        return $this->findAll($class, $criteria, $orderBy, $limit, $offset, [], true);
+    }
+
+    /**
+     * @return \Doctrine\DBAL\Query\QueryBuilder
+     */
+    public function createQueryBuilder()
+    {
+        return $this->connection->createQueryBuilder();
     }
 }

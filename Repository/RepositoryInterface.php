@@ -3,6 +3,7 @@
 namespace Truelab\KottiModelBundle\Repository;
 
 
+use Doctrine\DBAL\Query\QueryBuilder;
 use Truelab\KottiModelBundle\Model\ContentInterface;
 use Truelab\KottiModelBundle\Model\NodeInterface;
 
@@ -42,5 +43,20 @@ interface RepositoryInterface
      */
     public function findByPath($path);
 
+    /**
+     * @param null $class
+     * @param array $criteria
+     * @param array $orderBy
+     * @param null $limit
+     * @param null $offset
+     *
+     * @return int
+     */
     public function countAll($class = null, array $criteria = null, array $orderBy = null, $limit = null, $offset = null);
+
+    /**
+     * @return QueryBuilder
+     */
+    public function createQueryBuilder();
+
 }
