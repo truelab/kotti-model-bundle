@@ -1,6 +1,13 @@
 History
 =======
 
+
+0.3.1 (2015-04-01)
+------------------
+
+- 65df249 adds ModelUtil::filterInNavigation [Ruben Barilani]
+
+
 0.3.0 (2015-03-20)
 -----------------
 
