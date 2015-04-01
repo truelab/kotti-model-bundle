@@ -37,7 +37,26 @@ class ModelUtilTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(1, $actual);
         $this->assertArrayHasKey(0, $actual);
         $this->assertEquals('image', $actual[0]->getType());
+
+
+        $actual = ModelUtil::filterByType($nodes, '^(?!file)');
+        $this->assertCount(3, $actual);
+        $this->assertArrayHasKey(2, $actual);
+        $this->assertEquals('collapsable_document', $actual[2]->getType());
     }
+
+    /**
+     * @return NodeInterface[]
+     */
+    protected function provideNodes()
+    {
+        return array_map(function($type) {
+            $node = new Node();
+            $node->setType($type);
+            return $node;
+        }, ['document','image','file','file','collapsable_document']);
+    }
+
 
     public function testFilterInNavigation()
     {
@@ -70,16 +89,5 @@ class ModelUtilTest extends \PHPUnit_Framework_TestCase
     }
 
 
-    /**
-     * @return NodeInterface[]
-     */
-    protected function provideNodes()
-    {
-        return array_map(function($type) {
-            $node = new Node();
-            $node->setType($type);
-            return $node;
-        }, ['document','image','file','file','collapsable_document']);
-    }
 
 }
