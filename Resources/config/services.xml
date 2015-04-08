@@ -7,12 +7,14 @@
 
     <services>
 
+        <!-- MODEL FACTORY -->
         <service id="truelab_kotti_model.model_factory" class="Truelab\KottiModelBundle\Model\ModelFactory">
             <argument type="service" id="truelab_kotti_model.type_info.annotation_reader" />
             <argument>%truelab_kotti_model.type_column%</argument>
             <argument>%truelab_kotti_model.types%</argument>
         </service>
 
+        <!-- TYPE INFO ANNOTATION READER -->
         <service id="truelab_kotti_model.type_info.annotation_reader"
                  class="Truelab\KottiModelBundle\TypeInfo\TypeInfoAnnotationReader">
             <argument>Truelab\KottiModelBundle\TypeInfo\TypeInfo</argument>
@@ -20,22 +22,33 @@
             <argument>%truelab_kotti_model.types%</argument>
         </service>
 
+        <!-- ABSTRACT REPOSITORY -->
         <service id="truelab_kotti_model.abstract_repository"
                  abstract="true">
             <argument type="service" id="database_connection" />
             <argument type="service" id="truelab_kotti_model.type_info.annotation_reader" />
             <argument type="service" id="truelab_kotti_model.model_factory" />
             <argument>%truelab_kotti_model.filter%</argument>
+            <call method="setDefaultCriteriaManager">
+                <argument type="service" id="truelab_kotti_model.default_criteria_manager" />
+            </call>
         </service>
 
+        <!-- REPOSITORY -->
         <service
             id="truelab_kotti_model.repository" class="Truelab\KottiModelBundle\Repository\Repository"
             parent="truelab_kotti_model.abstract_repository">
         </service>
 
+        <!-- ALIAS REPOSITORY -->
         <service id="truelab_kotti_model.alias_repository"
                  class="Truelab\KottiModelBundle\Repository\AliasRepository"
                  parent="truelab_kotti_model.abstract_repository">
+        </service>
+
+        <!-- DEFAULT CRITERIA MANAGER -->
+        <service id="truelab_kotti_model.default_criteria_manager"
+                 class="Truelab\KottiModelBundle\Repository\Criteria\DefaultCriteriaManager">
         </service>
 
     </services>

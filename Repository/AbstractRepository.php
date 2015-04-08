@@ -9,6 +9,7 @@ use Truelab\KottiModelBundle\Model\ContentInterface;
 use Truelab\KottiModelBundle\Model\ModelFactory;
 use Truelab\KottiModelBundle\Model\Node;
 use Truelab\KottiModelBundle\Model\NodeInterface;
+use Truelab\KottiModelBundle\Repository\Criteria\DefaultCriteriaManagerInterface;
 use Truelab\KottiModelBundle\TypeInfo\TypeInfo;
 use Truelab\KottiModelBundle\TypeInfo\TypeInfoAnnotationReader;
 use Truelab\KottiModelBundle\TypeInfo\TypeInfoField;
@@ -35,6 +36,11 @@ abstract class AbstractRepository implements RepositoryInterface
      * @var ModelFactory
      */
     protected $modelFactory;
+
+    /**
+     * @var DefaultCriteriaManagerInterface
+     */
+    protected $defaultCriteriaManager;
 
     /**
      * @param Connection $connection
@@ -219,11 +225,7 @@ abstract class AbstractRepository implements RepositoryInterface
         // ------- WHERE
         $params = [];
         $preparedCriteria = [];
-
-        // ------- ONLY PUBLIC STATE FIXME
-        $preparedCriteria[] = 'contents.state = ?';
-        $params[] = 'public';
-
+        
         // -------- restrict by type if class is set
         if($class) {
             $preparedCriteria[] = 'nodes.type = ?';
@@ -231,6 +233,18 @@ abstract class AbstractRepository implements RepositoryInterface
             $params[] = $this->typeAnnotationReader->typeInfo($class)->getType();
         }
 
+        // DEFAULT CRITERIA
+        if($this->defaultCriteriaManager) {
+            $defaultCriteria = $this->defaultCriteriaManager->process();
+
+            if(count($defaultCriteria) > 0) {
+                foreach($defaultCriteria as $key => $c) {
+                    $preparedCriteria[] = $this->prepareCriteria($key, $c, $params);
+                }
+            }
+        }
+
+        // CRITERIA ARGUMENT
         if($criteria) {
             foreach($criteria as $key => $c) {
                 $preparedCriteria[] = $this->prepareCriteria($key, $c, $params);
@@ -448,5 +462,13 @@ abstract class AbstractRepository implements RepositoryInterface
     public function createQueryBuilder()
     {
         return $this->connection->createQueryBuilder();
+    }
+
+    /**
+     * @param DefaultCriteriaManagerInterface $defaultCriteriaManager
+     */
+    public function setDefaultCriteriaManager(DefaultCriteriaManagerInterface $defaultCriteriaManager)
+    {
+        $this->defaultCriteriaManager = $defaultCriteriaManager;
     }
 }
