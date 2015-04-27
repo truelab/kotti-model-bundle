@@ -28,7 +28,6 @@
             <argument type="service" id="database_connection" />
             <argument type="service" id="truelab_kotti_model.type_info.annotation_reader" />
             <argument type="service" id="truelab_kotti_model.model_factory" />
-            <argument>%truelab_kotti_model.filter%</argument>
             <call method="setDefaultCriteriaManager">
                 <argument type="service" id="truelab_kotti_model.default_criteria_manager" />
             </call>

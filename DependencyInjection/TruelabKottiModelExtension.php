@@ -40,7 +40,6 @@ class TruelabKottiModelExtension extends Extension
 
         $container->setParameter('truelab_kotti_model.type_column', $config['type_column']);
         $container->setParameter('truelab_kotti_model.types', $config['types']);
-        $container->setParameter('truelab_kotti_model.filter', $config['filter']);
 
         $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');

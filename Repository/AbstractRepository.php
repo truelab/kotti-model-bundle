@@ -46,16 +46,14 @@ abstract class AbstractRepository implements RepositoryInterface
      * @param Connection $connection
      * @param TypeInfoAnnotationReader $typeInfoAnnotationReader
      * @param ModelFactory $modelFactory
-     * @param array $filters
      */
     public function __construct(Connection $connection,
                                 TypeInfoAnnotationReader $typeInfoAnnotationReader,
-                                ModelFactory $modelFactory, array $filters = [])
+                                ModelFactory $modelFactory)
     {
         $this->connection = $connection;
         $this->typeAnnotationReader = $typeInfoAnnotationReader;
         $this->modelFactory = $modelFactory;
-        $this->filters = $filters;
     }
 
     /**
@@ -174,10 +172,6 @@ abstract class AbstractRepository implements RepositoryInterface
         $lazyFields = [];
 
 
-        if(!$class) {
-            $typeInfo = $this->filter($typeInfo);
-        }
-
         $qb = $this->connection
             ->createQueryBuilder();
 
@@ -225,7 +219,7 @@ abstract class AbstractRepository implements RepositoryInterface
         // ------- WHERE
         $params = [];
         $preparedCriteria = [];
-        
+
         // -------- restrict by type if class is set
         if($class) {
             $preparedCriteria[] = 'nodes.type = ?';
@@ -348,32 +342,6 @@ abstract class AbstractRepository implements RepositoryInterface
 
             return key($value);
         }
-    }
-
-    /**
-     * @param TypeInfo[] $typeInfo
-     *
-     * @return TypeInfo[]
-     */
-    protected function filter(array $typeInfo)
-    {
-        $indexes = [];
-        foreach($typeInfo as $index => $info)
-        {
-            foreach($this->filters as $alias) {
-                if($info->getAlias() === $alias) {
-                    $indexes[] = $index;
-                }
-            }
-        }
-
-        foreach($indexes as $i) {
-            unset($typeInfo[$i]);
-        }
-
-        $typeInfo = array_values($typeInfo);
-
-        return $typeInfo;
     }
 
     /**

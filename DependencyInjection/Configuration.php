@@ -27,9 +27,6 @@ class Configuration implements ConfigurationInterface
                     ->useAttributeAsKey('name')
                     ->prototype('scalar')->end()
                 ->end()
-                ->arrayNode('filter')
-                    ->prototype('scalar')->end()
-                ->end()
             ->end();
 
         // Here you should define the parameters that are allowed to
