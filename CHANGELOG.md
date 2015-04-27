@@ -1,6 +1,13 @@
 History
 =======
 
+0.5.0 (2015-04-27)
+------------------
+
+***BREAKING CHANGE***: removes "filter" config option
+
+- 8d21112 removes filter option, breaking change [Ruben Barilani]
+
 
 0.4.0 (2015-04-08)
 ------------------
