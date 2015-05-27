@@ -11,8 +11,8 @@ use Truelab\KottiModelBundle\Model\Node;
 use Truelab\KottiModelBundle\Model\NodeInterface;
 use Truelab\KottiModelBundle\Repository\Criteria\DefaultCriteriaManagerInterface;
 use Truelab\KottiModelBundle\TypeInfo\TypeInfo;
-use Truelab\KottiModelBundle\TypeInfo\TypeInfoAnnotationReader;
 use Truelab\KottiModelBundle\TypeInfo\TypeInfoField;
+use Truelab\KottiModelBundle\TypeInfo\TypeInfoRepositoryAnnotationReaderInterface;
 
 /**
  * Class AbstractRepository
@@ -28,9 +28,9 @@ abstract class AbstractRepository implements RepositoryInterface
     protected $connection;
 
     /**
-     * @var TypeInfoAnnotationReader
+     * @var TypeInfoRepositoryAnnotationReaderInterface
      */
-    protected $typeAnnotationReader;
+    protected $annotationReader;
 
     /**
      * @var ModelFactory
@@ -44,15 +44,15 @@ abstract class AbstractRepository implements RepositoryInterface
 
     /**
      * @param Connection $connection
-     * @param TypeInfoAnnotationReader $typeInfoAnnotationReader
+     * @param TypeInfoRepositoryAnnotationReaderInterface $annotationReader
      * @param ModelFactory $modelFactory
      */
     public function __construct(Connection $connection,
-                                TypeInfoAnnotationReader $typeInfoAnnotationReader,
+                                TypeInfoRepositoryAnnotationReaderInterface $annotationReader,
                                 ModelFactory $modelFactory)
     {
         $this->connection = $connection;
-        $this->typeAnnotationReader = $typeInfoAnnotationReader;
+        $this->annotationReader = $annotationReader;
         $this->modelFactory = $modelFactory;
     }
 
@@ -166,9 +166,8 @@ abstract class AbstractRepository implements RepositoryInterface
 
         $platformName  = $this->connection->getDatabasePlatform()->getName();
 
-        // can return all type infos if $class == null FIXME
-        $typeInfo = $this->typeAnnotationReader->inheritanceLineageTypeInfos($class);
-        $nodeTypeInfo = $this->typeAnnotationReader->typeInfo(Node::getClass()); // FIXME
+        $typeInfo = $this->annotationReader->inheritanceLineageTypeInfos($class);
+        $nodeTypeInfo = $this->annotationReader->typeInfo(Node::getClass()); // FIXME
         $lazyFields = [];
 
 
@@ -224,7 +223,7 @@ abstract class AbstractRepository implements RepositoryInterface
         if($class) {
             $preparedCriteria[] = 'nodes.type = ?';
             // node.type param
-            $params[] = $this->typeAnnotationReader->typeInfo($class)->getType();
+            $params[] = $this->annotationReader->typeInfo($class)->getType();
         }
 
         // DEFAULT CRITERIA

@@ -34,7 +34,7 @@ class AliasRepository extends AbstractRepository
             return parent::findAll($alias, $criteria, $orderBy, $limit, $offset, $fields, $count);
         }
 
-        $class = $this->typeAnnotationReader->getClassByAlias($alias);
+        $class = $this->annotationReader->getClassByAlias($alias);
 
         return parent::findAll($class, $criteria, $orderBy, $limit, $offset, $fields, $count);
     }

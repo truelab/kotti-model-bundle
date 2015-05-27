@@ -9,18 +9,38 @@ use Truelab\KottiModelBundle\Model\ModelFactory;
  * Class TypeInfoAnnotationReader
  * @package Truelab\KottiModelBundle\TypeInfo
  */
-class TypeInfoAnnotationReader
+class TypeInfoAnnotationReader implements TypeInfoRepositoryAnnotationReaderInterface
 {
+    /**
+     * @var AnnotationReader
+     */
     private $annotationReader;
 
+    /**
+     * @var string
+     */
     private $nodeClass;
 
+    /**
+     * @var string
+     */
     private $annotationClass;
 
+    /**
+     * @var array
+     */
     private $cache = [];
 
+    /**
+     * @var array
+     */
     private $typesMap;
 
+    /**
+     * @param string $annotationClass
+     * @param string $nodeClass
+     * @param array $typesMap
+     */
     public function __construct($annotationClass, $nodeClass, $typesMap)
     {
         $this->annotationReader = new AnnotationReader();
@@ -29,19 +49,10 @@ class TypeInfoAnnotationReader
         $this->typesMap  = $typesMap;
     }
 
-    protected function inheritanceTypeInfos($class)
-    {
-        if(!$class === $this->nodeClass) {
-            return $this->allTypeInfos();
-        }
-
-        return $this->inheritanceLineageTypeInfos($class);
-    }
-
     /**
      * @param string $class
      *
-     * @return TypeInfo
+     * @return TypeInfo|null
      */
     public function typeInfo($class) {
 
@@ -49,24 +60,27 @@ class TypeInfoAnnotationReader
             return $this->cache[$class];
         }
 
-        $this->cache[$class] = $this->annotationReader->getClassAnnotation(
-            new \ReflectionClass($class),
+        try{
+            $reflectionClass = new \ReflectionClass($class);
+        }catch (\ReflectionException $e) {
+            return null;
+        }
+
+        $annotation = $this->annotationReader->getClassAnnotation(
+            $reflectionClass,
             $this->annotationClass
         );
 
+        if(!$annotation) {
+            return null;
+        }
+
+        $this->cache[$class] = $annotation;
         $this->cache[$class]->setClass($class);
 
         return $this->cache[$class];
     }
 
-    protected function allTypeInfos()
-    {
-        $info = [];
-        foreach($this->typesMap as $type => $class) {
-            $info[] = $this->typeInfo($class);
-        }
-        return $info;
-    }
 
     /**
      * @param $class
@@ -79,24 +93,74 @@ class TypeInfoAnnotationReader
             return $this->allTypeInfos();
         }
 
-        return array_map(function ($class)  {
-            return $this->typeInfo($class);
-        }, $this->inheritanceLineage($class));
+        if(is_array($class)) {
+            return $this->inheritanceLineageTypeInfosMultipleClasses($class);
+        }
+
+        $lineage = $this->inheritanceLineage($class);
+        $typeInfos = [];
+
+        foreach($lineage as $class) {
+            if($typeInfo = $this->typeInfo($class)) {
+                $typeInfos[] = $typeInfo;
+            }
+        }
+
+        return $typeInfos;
     }
 
-    public function inheritanceLineage($class)
+
+    /**
+     * @param array $classes
+     *
+     * @return array
+     */
+    protected function inheritanceLineageTypeInfosMultipleClasses(array $classes)
     {
-        return array_filter(Location::inheritanceLineage($class), function ($class) {
-            return !(new \ReflectionClass($class))->isAbstract();
-        });
+        if(empty($classes)) {
+            return [];
+        }
+
+        $array = [];
+
+        foreach($classes as $class) {
+
+            $lineage = $this->inheritanceLineage($class);
+            array_shift($lineage);
+
+            foreach($lineage as $lineageClass) {
+                if(!in_array($lineageClass, $array)) {
+                    array_unshift($array, $lineageClass);
+                }
+            }
+        }
+
+        foreach($classes as $class) {
+            array_unshift($array, $class);
+        }
+
+        $typeInfos = [];
+        foreach($array as $class) {
+            if($typeInfo = $this->typeInfo($class)) {
+                $typeInfos[] = $typeInfo;
+            }
+        };
+
+        return $typeInfos;
     }
 
-    public function getClassByAlias($alias)
+
+    /**
+     * @param string|string[] $aliases
+     *
+     * @return string|string[]
+     * @throws \Exception
+     */
+    public function getClassByAlias($aliases)
     {
 
-
-        if(!$alias) {
-            return null;
+        if(is_array($aliases)) {
+            return $this->getClassesByAliases($aliases);
         }
 
         /**
@@ -104,11 +168,10 @@ class TypeInfoAnnotationReader
          */
         foreach($this->cache as $class => $typeInfo)
         {
-            if($typeInfo->getAlias() === $alias) {
+            if($typeInfo->getAlias() === $aliases) {
                 return $class;
             }
         }
-
 
         $allInfo = $this->allTypeInfos();
 
@@ -117,12 +180,92 @@ class TypeInfoAnnotationReader
          */
         foreach($allInfo as $typeInfo)
         {
-            if($typeInfo->getAlias() === $alias)
+            if($typeInfo->getAlias() === $aliases)
             {
                 return $typeInfo->getClass();
             }
         }
 
-        throw new \Exception(sprintf('Class for requested alias (%s) was not found!! Maybe is not registered under truelab_kotti_model.types map?', $alias));
+        throw new \Exception(sprintf('Class for requested aliases (%s) was not found!! Maybe is not registered under truelab_kotti_model.types map?', $aliases));
+    }
+
+    /**
+     * Returns all the inheritance lineage for the class ( parent classes + class )
+     * !!! filtering out the abstract classes
+     *
+     * @param string $class
+     *
+     * @return string[]
+     */
+    public function inheritanceLineage($class)
+    {
+        return array_values(array_filter(Location::inheritanceLineage($class), function ($class) {
+            return !(new \ReflectionClass($class))->isAbstract();
+        }));
+    }
+
+    /**
+     * @return array
+     */
+    protected function allTypeInfos()
+    {
+        $info = [];
+        foreach($this->typesMap as $type => $class) {
+            $info[] = $this->typeInfo($class);
+        }
+        return $info;
+    }
+
+    /**
+     * @param string[] $aliases
+     * @return string[]
+     * @throws \Exception
+     */
+    protected function getClassesByAliases(array $aliases)
+    {
+        if(empty($aliases)) {
+            return [];
+        }
+
+        $classes = [];
+
+        // search
+        $allInfo = $this->allTypeInfos();
+
+        /**
+         * @var TypeInfo $typeInfo
+         */
+        foreach($allInfo as $typeInfo)
+        {
+            if(in_array($typeInfo->getAlias(), $aliases)) {
+                $classes[$typeInfo->getAlias()] = $typeInfo->getClass();
+            }
+        }
+
+        foreach($aliases as $alias) {
+            if(!isset($classes[$alias])) {
+                throw new \Exception(sprintf('Class for requested alias (%s) was not found!! Maybe is not registered under truelab_kotti_model.types map?', $alias));
+            }
+        }
+
+        $asStrings = [];
+        foreach($classes as $alias => $class) {
+            $asStrings[] = $class;
+        }
+        return $asStrings;
+    }
+
+    /**
+     * @param $class
+     *
+     * @return array|TypeInfo[]
+     */
+    protected function inheritanceTypeInfos($class)
+    {
+        if(!$class === $this->nodeClass) {
+            return $this->allTypeInfos();
+        }
+
+        return $this->inheritanceLineageTypeInfos($class);
     }
 }
