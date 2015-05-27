@@ -5,6 +5,7 @@ namespace Truelab\KottiModelBundle\Tests\Repository;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Truelab\KottiModelBundle\Model\Document;
 use Truelab\KottiModelBundle\Model\File;
+use Truelab\KottiModelBundle\Model\NodeInterface;
 use Truelab\KottiModelBundle\Repository\Repository;
 
 /**
@@ -12,7 +13,8 @@ use Truelab\KottiModelBundle\Repository\Repository;
  * @package Truelab\KottiModelBundle\Tests\Repository
  * @group functional
  */
-class RepositoryFunctionalTest extends WebTestCase {
+class RepositoryFunctionalTest extends AbstractRepositoryFunctionalTest
+{
 	private $client;
 
 	/**
@@ -42,6 +44,23 @@ class RepositoryFunctionalTest extends WebTestCase {
 		$nodes = $this->repository->findAll(File::getClass());
 		$this->assertTrue(is_array($nodes));
 	}
+
+    public function testFindAllWithTypeDocumentOrFile()
+    {
+        $nodes = $this->repository->findAll([File::getClass(), Document::getClass()]);
+        $this->assertTrue(is_array($nodes));
+
+        foreach($nodes as $node) {
+            $this->assertTrue(get_class($node) === File::getClass() || get_class($node) === Document::getClass());
+        }
+
+        $ids = array_map(function (NodeInterface $node) {
+            $this->assertTrue(get_class($node) === File::getClass() || get_class($node) === Document::getClass());
+            return $node->getId();
+        }, $nodes);
+
+        $this->assertFalse($this->array_has_dupes($ids));
+    }
 
     public function testFindAllWithDateTimeCriteria()
     {
@@ -156,5 +175,6 @@ class RepositoryFunctionalTest extends WebTestCase {
         $this->assertNotNull($count);
         $this->assertTrue(is_int($count), 'I expect count result is a int number');
     }
+
 
 }

@@ -10,19 +10,22 @@ use Truelab\KottiModelBundle\Model\NodeInterface;
 interface RepositoryInterface
 {
     /**
-     * @param $class
-     * @param array $criteria
-     * @param array $orderBy
-     * @param null $limit
-     * @param null $offset
+     * @param null|string|string[] $class
+     * @param null|array $criteria
+     * @param null|array $orderBy
+     * @param null|int $limit
+     * @param null|int $offset
      *
-     * @return NodeInterface[]
+     * @param string[] $fields - fields to exclude from select
+     * @param bool $count   - count instead of fetch
+     *
+     * @return \Truelab\KottiModelBundle\Model\NodeInterface[]|int
      */
-    public function findAll($class = null, array $criteria = null, array $orderBy = null, $limit = null, $offset = null);
+    public function findAll($class = null, array $criteria = null, array $orderBy = null, $limit = null, $offset = null, array $fields = [], $count = false);
 
     /**
-     * @param string $class
-     * @param array $criteria
+     * @param null|string $class
+     * @param null|array $criteria
      *
      * @return NodeInterface|ContentInterface
      */
@@ -44,11 +47,11 @@ interface RepositoryInterface
     public function findByPath($path);
 
     /**
-     * @param null $class
-     * @param array $criteria
-     * @param array $orderBy
-     * @param null $limit
-     * @param null $offset
+     * @param null|string|string[] $class
+     * @param null|array $criteria
+     * @param null|array $orderBy
+     * @param null|int $limit
+     * @param null|int $offset
      *
      * @return int
      */

@@ -29,13 +29,33 @@ class AliasRepository extends AbstractRepository
     public function findAll($alias = null, array $criteria = null, array $orderBy = null, $limit = null, $offset = null, array $fields = [], $count = false)
     {
 
-        if(class_exists($alias)) {
-            // alias is a existing class name
+        if($alias === null) {
             return parent::findAll($alias, $criteria, $orderBy, $limit, $offset, $fields, $count);
         }
 
-        $class = $this->annotationReader->getClassByAlias($alias);
+        if(is_string($alias)) {
 
+            if(class_exists($alias)) {
+                // alias is a existing class name
+                return parent::findAll($alias, $criteria, $orderBy, $limit, $offset, $fields, $count);
+            }
+        }
+
+        if(is_array($alias)) {
+
+            $classes = [];
+            foreach($alias as $a) {
+                if(class_exists($a)) {
+                    // alias is a existing class name
+                    $classes[] = $a;
+                }else{
+                    $classes[] = $this->annotationReader->getClassByAlias($a);
+                }
+            }
+            return parent::findAll($classes, $criteria, $orderBy, $limit, $offset, $fields, $count);
+        }
+
+        $class = $this->annotationReader->getClassByAlias($alias);
         return parent::findAll($class, $criteria, $orderBy, $limit, $offset, $fields, $count);
     }
 

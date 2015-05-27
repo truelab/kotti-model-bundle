@@ -57,13 +57,18 @@ abstract class AbstractRepository implements RepositoryInterface
     }
 
     /**
-     * @param $class
+     *
+     * @param null|string|array $class
      * @param array $criteria
      * @param array $orderBy
-     * @param null $limit
-     * @param null $offset
+     * @param null|int $limit
+     * @param null|int $offset
      *
-     * @return NodeInterface[]
+     * @param array $fields
+     * @param bool $count
+     *
+     * @return \Truelab\KottiModelBundle\Model\NodeInterface[]
+     * @throws \Doctrine\DBAL\DBALException
      */
     public function findAll($class = null, array $criteria = null, array $orderBy = null, $limit = null, $offset = null, array $fields = [], $count = false)
     {
@@ -144,12 +149,12 @@ abstract class AbstractRepository implements RepositoryInterface
     }
 
     /**
-     * @param null $class
+     * @param null|string|array $class
      * @param array $criteria
      * @param array $orderBy
-     * @param null $limit
-     * @param null $offset
-     * @param array $fields
+     * @param null|int $limit
+     * @param null|int $offset
+     * @param string[] $fields
      * @param bool $count
      *
      * @return array
@@ -202,7 +207,19 @@ abstract class AbstractRepository implements RepositoryInterface
         // remove node before join sql parts
         if($class) {
             $typeInfo = array_reverse($typeInfo, true);
-            array_shift($typeInfo);
+            $newTypeInfos = [];
+
+            /**
+             * @var TypeInfo $info
+             */
+            foreach($typeInfo as $info) {
+                if($info->getClass() !== Node::getClass()) {
+                    $newTypeInfos[] = $info;
+                }
+            }
+
+            $typeInfo = $newTypeInfos;
+
         }else{
             array_shift($typeInfo);
         }
@@ -211,7 +228,7 @@ abstract class AbstractRepository implements RepositoryInterface
          * @var $info TypeInfo
          */
         foreach($typeInfo as $info) {
-            $sql .= ( $class ? ' JOIN ' : ' LEFT JOIN ') . $info->getTable() . ' ON ' . $info->getAssociation();
+            $sql .= ( $class !== null && !is_array($class) ? ' JOIN ' : ' LEFT JOIN ') . $info->getTable() . ' ON ' . $info->getAssociation();
         }
 
 
@@ -221,9 +238,23 @@ abstract class AbstractRepository implements RepositoryInterface
 
         // -------- restrict by type if class is set
         if($class) {
-            $preparedCriteria[] = 'nodes.type = ?';
-            // node.type param
-            $params[] = $this->annotationReader->typeInfo($class)->getType();
+
+            if(is_string($class)) {
+
+                $preparedCriteria[] = 'nodes.type = ?';
+                // node.type param
+                $params[] = $this->annotationReader->typeInfo($class)->getType();
+
+            }else if(is_array($class)) {
+
+                $c = [];
+                foreach($class as $cl) {
+                    $c[] = 'nodes.type = ?';
+                    $params[] = $this->annotationReader->typeInfo($cl)->getType();
+                }
+
+                $preparedCriteria[] = join(' OR ', $c);
+            }
         }
 
         // DEFAULT CRITERIA
